@@ -1,5 +1,5 @@
 const {test,expect}=require('@playwright/test');
-const nav=(page,id)=>page.locator(`.nav [data-go="${id}"]`).click();
+const nav=async(page,id)=>{if(id==='nutrition'){await page.locator('.nav [data-go="plan"]').click();await page.locator('#plan [data-go="nutrition"]').first().click();}else await page.locator(`.nav [data-go="${id}"]`).click();};
 test.beforeEach(async({page})=>{await page.goto('./');});
 test('navigation, discovery filters and all original recipe cards render',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));

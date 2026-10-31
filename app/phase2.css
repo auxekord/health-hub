@@ -1,0 +1,270 @@
+/* Extend the recovered dark/lime system without replacing its cooking cards. */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+.week-day {
+  background: #1b241c;
+  border: 1px solid #42563a;
+  border-radius: 15px;
+  padding: 10px;
+  min-width: 0;
+}
+.week-day h3 {
+  font-size: 15px;
+  margin: 4px 0 12px;
+}
+.week-day.today {
+  border-color: #c8fa50;
+}
+.week-day .btn {
+  width: 100%;
+  padding: 9px 4px;
+  font-size: 12px;
+}
+.plan-meal {
+  border-top: 1px solid #42563a;
+  margin-top: 12px;
+  padding-top: 10px;
+  overflow-wrap: anywhere;
+}
+.plan-meal strong {
+  font-size: 13px;
+}
+.plan-meal small {
+  display: block;
+  color: #b5c3af;
+  margin: 6px 0;
+}
+.plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.plan-actions button {
+  min-height: 44px;
+  background: #303d2b;
+  color: #f5f6ef;
+  border: 1px solid #61715b;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.phase-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.phase-summary > div {
+  border: 1px solid #526b48;
+  background: #263326;
+  border-radius: 14px;
+  padding: 14px;
+}
+.phase-summary b {
+  display: block;
+  font-size: 22px;
+}
+.phase-summary small {
+  display: block;
+  color: #bdcbb6;
+  line-height: 1.5;
+}
+.phase-summary progress {
+  width: 100%;
+  accent-color: #c8fa50;
+}
+.phase-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.phase-fields label,
+.phase-label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.phase-fields input,
+.phase-fields select,
+.phase-fields textarea,
+.phase-label input,
+.phase-label select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #61715b;
+  border-radius: 10px;
+  color: #fff;
+  background: #252e24;
+  min-height: 44px;
+}
+.phase-wide {
+  grid-column: 1/-1;
+}
+.phase-dialog {
+  width: min(900px, 96vw);
+  max-height: 92dvh;
+  overflow: auto;
+  background: #1b211b;
+  color: #f5f6ef;
+  border: 1px solid #667b56;
+  border-radius: 22px;
+  padding: 20px;
+}
+.phase-dialog::backdrop {
+  background: #000b;
+}
+.component-editor {
+  padding: 14px;
+  border: 1px solid #526b48;
+  border-radius: 14px;
+  margin: 12px 0;
+  background: #222e22;
+}
+.component-editor summary {
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 44px;
+}
+.component-editor .phase-fields {
+  margin-top: 12px;
+}
+.phase-toast {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c8fa50;
+  color: #12200b;
+  z-index: 10;
+  border-radius: 14px;
+  padding: 12px 18px;
+  box-shadow: 0 8px 30px #0008;
+  max-width: 95vw;
+}
+.phase-toast:empty {
+  display: none;
+}
+.phase-toast button {
+  margin-left: 8px;
+  min-height: 44px;
+}
+.phase-error {
+  color: #ffe7a6;
+}
+.phase-journal {
+  display: grid;
+  gap: 12px;
+}
+.phase-journal article {
+  overflow-wrap: anywhere;
+}
+.shopping-row {
+  display: grid;
+  grid-template-columns: 28px minmax(90px, 1fr) 90px 60px;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #42563a;
+}
+.shopping-row input[type="checkbox"] {
+  width: 23px;
+  height: 23px;
+  accent-color: #c8fa50;
+}
+.shopping-row input[type="number"] {
+  padding: 10px;
+}
+.shopping-row.is-done strong {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+.shopping-row small {
+  color: #b5c3af;
+}
+.trend-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.trend-table td,
+.trend-table th {
+  text-align: left;
+  border-bottom: 1px solid #42563a;
+  padding: 10px 6px;
+}
+.trend-scroll {
+  overflow: auto;
+}
+.phase-muted {
+  color: #b5c3af;
+  line-height: 1.5;
+}
+.phase-recipe-link {
+  color: #c8fa50;
+}
+.phase-fields input:focus-visible,
+.phase-fields select:focus-visible,
+.phase-fields textarea:focus-visible {
+  outline: 3px solid #c8fa50;
+}
+.phase-dialog button,
+.phase-dialog select {
+  min-height: 44px;
+}
+button {
+  touch-action: manipulation;
+}
+.week-day .day-total {
+  font-size: 11px;
+  color: #c8fa50;
+}
+.phase-advanced {
+  margin: 14px 0;
+}
+.phase-advanced > summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+  font-weight: 700;
+}
+@media (max-width: 1000px) {
+  .week-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .week-grid {
+    grid-template-columns: 1fr;
+  }
+  .week-day {
+    padding: 15px;
+  }
+  .week-day .btn {
+    width: auto;
+    padding: 10px;
+  }
+  .phase-fields {
+    grid-template-columns: 1fr;
+  }
+  .phase-summary {
+    grid-template-columns: 1fr;
+  }
+  .phase-wide {
+    grid-column: auto;
+  }
+  .phase-dialog {
+    padding: 14px;
+  }
+  .shopping-row {
+    grid-template-columns: 28px minmax(80px, 1fr) 76px 50px;
+  }
+  .phase-dialog h2 {
+    font-size: 22px;
+  }
+}
