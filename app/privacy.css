@@ -1,0 +1,58 @@
+.panel,
+.entry,
+.couple-grid,
+.insight {
+  overflow-wrap: anywhere;
+}
+/* Keep untrusted record text from expanding the mobile layout. */
+.panel,
+.entry,
+.row > div {
+  min-width: 0;
+}
+.entry strong,
+.entry small,
+.live-product strong,
+.live-product small,
+.couple-grid span,
+.panel p {
+  overflow-wrap: anywhere;
+}
+.entry .row > div {
+  max-width: 100%;
+}
+#storage-warning input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #c8fa50;
+}
+#storage-warning label {
+  display: block;
+  margin-top: 14px;
+}
+#privacy-profile-form fieldset {
+  border: 1px solid #61715b;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 0;
+  min-width: 0;
+}
+#privacy-profile-form label {
+  display: block;
+  margin: 10px 0;
+}
+#privacy-profile-form input {
+  display: block;
+  width: 100%;
+}
+.notice select {
+  max-width: 100%;
+}
+
+#storage-warning {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  max-height: 70vh;
+  overflow: auto;
+}

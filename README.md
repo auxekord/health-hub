@@ -10,3 +10,9 @@ Repository initialized for Codex development. The existing Health Hub v16 applic
 2. Audit and fix food-to-Kitchen workflows.
 3. Run browser tests.
 4. Deploy to GitHub Pages after validation.
+
+## Production security remediation
+
+See [SECURITY_REMEDIATION.md](SECURITY_REMEDIATION.md) for the focused privacy,
+backup-validation and recovery changes. This review branch does not authorize a
+merge or deployment. Keep private backups out of this repository.
