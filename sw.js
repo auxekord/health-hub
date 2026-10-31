@@ -1,1 +1,22 @@
-const CACHE='health-hub-16-shell';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest','./icon.svg']))));self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
+const PREFIX = 'health-hub-';
+const CACHE = 'health-hub-16-shell-audit-1';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(key => key.startsWith(PREFIX) && key !== CACHE).map(key => caches.delete(key))
+  )).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
+  event.respondWith(fetch(event.request).catch(async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(event.request);
+    if (cached) return cached;
+    if (event.request.mode === 'navigate') return cache.match('./index.html');
+    return Response.error();
+  }));
+});
