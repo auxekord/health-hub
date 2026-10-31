@@ -1,6 +1,6 @@
 const PREFIX = 'health-hub-';
-const CACHE = 'health-hub-16-shell-audit-1';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'health-hub-production-security-1';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './app/data-safety.js', './app/privacy-ui.js', './app/privacy.css'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
 });
