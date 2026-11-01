@@ -1,54 +1,61 @@
-# Sanitized Phase 2 preview build
+# Sanitized Phase 2 menu/order preview
 
-## Architecture and boundaries
+## Release scope
 
-Build from the updated Phase 2 branch using `npm run build:preview`. Output: `/workspace/health-hub/dist/health-hub-demo`. Archive: `/workspace/health-hub/artifacts/health-hub-phase2-demo.zip`.
+This build adds the catalog/order/recommendation foundation but **contains zero verified restaurant menus and zero actual menu items**. The five requested names are explicitly labeled unverified research entries, not live results. Official-source access was denied by the environment policy. See RESTAURANT_COVERAGE.md and MENU_SOURCES.md. Do not use this preview as evidence that actual restaurant menus or personalized branded suggestions have been completed.
 
-The preview uses fictional profiles, targets, history, plans, journals, restaurant estimates and groceries. A persistent HEALTH HUB — DEMO PREVIEW notice warns against entering real health information. Storage uses `healthhub-demo-phase2-hybrid-v2`; production namespace and hostname are absent. A distinct Pages origin provides browser storage isolation. Never serve this build under production's origin.
+## Architecture and isolation
 
-Personal backup imports are disabled: generated modern reader code is removed, legacy import callbacks reject without reading, and file inputs remain disabled. Production backup functionality is unchanged. Food discovery uses local fictional fixtures, not live Open Food Facts. CSP connects only to self. User-initiated external map/menu navigation remains possible with noopener/noreferrer; no automatic third-party health-data request is introduced.
+Build with `npm run build:preview`. Output directory: `/workspace/health-hub/dist/health-hub-demo`. New archive: `/workspace/health-hub/artifacts/health-hub-phase2-demo.zip`.
 
-## Exact upload allowlist
+All household profiles, goals, records and restaurant estimates are fictional. The visible HEALTH HUB — DEMO PREVIEW notice tells users not to enter real health information. Storage remains `healthhub-demo-phase2-hybrid-v2` on an intended separate HTTPS origin. Never host this build on production's origin. No production namespace or hostname is present in generated files.
+
+Both backup import paths remain blocked: modern file-reading code is removed, legacy callbacks reject without reading, file inputs remain disabled after render. Production imports are unaffected. External food search uses fictional local fixtures. Catalog data is local; recommendations never transmit profiles, preferences or journals. CSP permits connections only to self. Explicit map/menu navigation opens separate sites with noopener/noreferrer. No API credential, paid service, backend or analytics is added.
+
+The exact previously reviewed `dc46faf` archive is preserved at `artifacts/health-hub-phase2-demo-dc46faf.zip`, SHA-256 `45d4aec289902f71fa4af4a35f442a1fd5c64bdd144532ceaca8b62daa08a6b2`. This newer archive is not deployment-approved and has not replaced an existing hosted preview.
+
+## Exact upload contents
 
 | File | Bytes |
 | --- | ---: |
-| `index.html` | 122821 |
+| `index.html` | 122943 |
 | `manifest.webmanifest` | 376 |
-| `sw.js` | 1251 |
+| `sw.js` | 1320 |
 | `icon.svg` | 313 |
-| `app/model.js` | 13262 |
+| `app/model.js` | 14243 |
 | `app/data-safety.js` | 8433 |
 | `app/privacy-ui.js` | 10621 |
 | `app/privacy.css` | 931 |
-| `app/phase2.js` | 51800 |
-| `app/phase2.css` | 5485 |
-| `app/restaurants.js` | 13545 |
+| `app/phase2.js` | 53573 |
+| `app/phase2.css` | 6242 |
+| `app/restaurants.js` | 15208 |
+| `app/catalog-data.js` | 1539 |
+| `app/catalog.js` | 10313 |
+| `app/catalog-ui.js` | 13713 |
 | `app/demo.js` | 5896 |
 | `app/bootstrap.js` | 1465 |
 | `app/demo.css` | 362 |
 | `_headers` | 595 |
 | `robots.txt` | 26 |
 
-Total static files: **16**. Uncompressed: **237182 bytes**. ZIP: **63040 bytes**.
+**19 files**, **268112 bytes** uncompressed. ZIP size: **73451 bytes**.
 
-ZIP SHA-256: `45d4aec289902f71fa4af4a35f442a1fd5c64bdd144532ceaca8b62daa08a6b2`.
+ZIP SHA-256: `e5cc17f8a425be2ab32517d802a7bc1a2e114a208f28821402382ae8b84e888b`.
 
-Only these static files are uploaded after approval. No repository history, backup files, reports, screenshots, tests, dependency directories or development-only files are bundled. `artifacts/preview-verification.json` records individual hashes.
+`artifacts/preview-verification.json` records every file hash, build checks and explicit catalog coverage. Upload only these files after approval, never the repository. No history, backups, development/test fixtures, reports, screenshots or dependencies are bundled.
 
-## Validation
+## Validation and manual review
 
-100 application tests and 21 preview tests passed. All ten build privacy/integrity checks passed. Manual source-path review supplements scans: generated backup file readers are absent, both import entry points are blocked, fictional seeding uses only its namespace, restaurant controls validate links, and screenshots use fresh fictional contexts. All 139 recipes and original instructions are retained. Automated scanning cannot guarantee absence of all sensitive information. This build supersedes the earlier preview ZIP, which is not deployment-approved.
+138 application tests and 27 preview tests passed. All 12 build checks passed; source-path review confirms disabled modern/legacy imports and local-only fictional storage. Original recipe JSON and instructions are unchanged. 14 screenshots were captured with fictional data; new brand screens show unavailable menus rather than fabricated listings. Synthetic test menu publications are absent from assets. Automated scans and manual inspection provide evidence, not a guarantee against every sensitive string.
 
-## Free separate-origin hosting, after approval only
+## Future separate-origin hosting — no upload performed
 
-Proposed Cloudflare Pages Direct Upload free-tier project URL: `https://<available-project-name>.pages.dev/`. A project name must first be available; no exact hostname has been reserved. The preview is public unless separately protected; fictional local state stays in the reviewing browser, while the static source is publicly downloadable. Noindex headers/robots discourage indexing but are not access control. Cloudflare receives normal hosting request metadata. External links reveal deliberate search/navigation information to the destination.
+Proposed free Cloudflare Pages Direct Upload URL: `https://<available-project-name>.pages.dev/`; no name is reserved. The static app/source would be public. Cloudflare receives normal hosting metadata; browser-entered data remains on that preview origin. Noindex/robots headers discourage indexing but are not access control. Explicit external links disclose deliberate navigation/search information to their destinations.
 
-After explicit approval: create/sign in to a free Cloudflare account on the Android tablet, open Workers & Pages, choose Pages Direct Upload/Create using uploaded assets (dashboard wording may vary), select an unused project name, and upload only this generated ZIP or its extracted allowlisted directory. Inspect the asset list before deploying. Do not connect the Git repository, change GitHub Pages settings, select production, or upload the whole repository. If the tablet browser cannot select/upload the ZIP reliably, use a desktop browser for upload and open the resulting HTTPS URL on the tablet.
+After separate approval, sign in to a free Cloudflare account, choose Workers & Pages → Pages → Direct Upload (dashboard labels may vary), choose an available project name and upload only this ZIP or its extracted static directory. Review the asset list first. Android Chrome landscape/Desktop site may help; use a computer for upload if the tablet file picker cannot handle the ZIP. Do not connect the repository, replace the current preview, change GitHub Pages, add health-data service keys or upload the whole checkout. Free-tier limits must be checked at approval time.
 
-No Cloudflare account/project or upload has been created. Free-tier limits and dashboard availability should be checked at approval time. No paid service is authorized.
+No Cloudflare account/project, upload or setting change was made. No production deployment or PR merge was performed.
 
-## Known limitations and approval checklist
+## Limitations and next step
 
-Discovery is local/manual plus explicitly opened external web searches, not an integrated restaurant API. No verified Campestre menu, official nutrition or prices are supplied. Demo estimates are fictional. Live provider availability and physical tablet installability remain unverified. Browser storage can be cleared or evicted and has no synchronization or account isolation. Do not import or enter personal data.
-
-Review the eight workflow screenshots, component portions and basis, profile separation, grocery behavior, import restrictions, artifact inventory and privacy implications. Deployment, production remediation, PR merge and production release each remain separately gated; none is performed by preparing this archive.
+Enable official-source network access or supply official publications, verify identity/region/serving/nutrition/allergens and reproduction rights, populate a small reviewed catalog, then rerun tests and rebuild for review. Current menu/recommendation success criteria remain blocked. Browser storage has no authentication, encryption or cross-device sync and may be evicted. Physical Android install/offline and hosted behavior remain unverified. Use fictional information only.

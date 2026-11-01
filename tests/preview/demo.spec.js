@@ -285,3 +285,23 @@ test("separate browser origins preserve a synthetic production-storage canary th
   ).toBeNull();
   await canary.close();
 });
+test('requested restaurant profiles disclose missing verified menus without fabricating food cards',async({page})=>{
+  await page.goto('./');await nav(page,'journal');
+  for (const name of ["Dunkin'","McDonald's",'Fixins Soul Kitchen','Sexy Steak','Campestre Chicken']) {
+    await page.locator('#journal-connected [data-p=restaurant]').click();
+    await page.locator('#restaurant-search-form [name=name]').fill(name);
+    await page.locator('#restaurant-browser').getByRole('button',{name:'Search saved restaurants',exact:true}).click();
+    await page.locator('#restaurant-browser').getByRole('button',{name:'Explore '+name,exact:true}).click();
+    await expect(page.locator('#restaurant-catalog')).toContainText('No source-verified menu');
+    await expect(page.locator('#restaurant-catalog .catalog-menu-item')).toHaveCount(0);
+    await expect(page.locator('#restaurant-catalog [data-catalog=suggestion]')).toHaveCount(0);
+    await page.locator('#restaurant-browser').getByRole('button',{name:'Close',exact:true}).click();
+  }
+  expect(await page.evaluate(()=>HHRestaurantCatalogData.sources.length)).toBe(0);
+});
+test('manual unknown custom orders remain local and profile-specific in the demo',async({page})=>{
+  await page.goto('./');await nav(page,'journal');await page.locator('#journal-connected [data-p=restaurant]').click();await page.locator('#restaurant-browser').getByRole('button',{name:"Explore Dunkin'",exact:true}).click();
+  const c=page.locator('#restaurant-catalog');await c.locator('[data-catalog=profile]').selectOption('wife');await c.locator('[data-catalog=custom] [name=name]').fill('Fictional custom item — not a published menu item');await c.getByRole('button',{name:'Add custom component',exact:true}).click();await expect(c.locator('[data-catalog=totals]')).toContainText('unknown');
+  await c.getByRole('button',{name:'Review order before logging'}).click();await expect(editor(page).locator('[name=profile]')).toHaveValue('wife');await page.locator('#save-meal').click();await page.reload();
+  const s=await data(page);expect(s.phase2.journal.find(x=>x.name==="Dunkin' custom order").components[0].nutrients.kcal).toBeNull();expect(s.phase2.journal.find(x=>x.name==="Dunkin' custom order").profile).toBe('wife');expect(await page.locator('#import').isDisabled()).toBe(true);
+});

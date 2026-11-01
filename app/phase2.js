@@ -397,7 +397,7 @@
       )
       .join(
         "",
-      )}</select></label><label class="phase-wide">Nutrition source / editable assumptions<input data-field="source" value="${esc(c.source)}" maxlength="500" placeholder="Label, official menu, reference food or unknown"></label><label>Preparation details<input data-field="preparation" value="${esc(c.preparation || "")}" placeholder="Optional: cooked, skin, additions"></label>${mode === "journal" ? `<label>Portion actually consumed (%)<input data-field="consumedPercent" type="number" min="0" max="100" step="any" value="${(c.consumedFraction ?? 1) * 100}"></label>` : ""}<label>Grocery category<select data-field="group">${options(["protein", "grain", "veg", "fat", "sauce", "spice", "other"], c.group || "other")}</select></label></div><details class="phase-advanced"><summary>Nutrition per ${fmt(c.nutritionBasis ?? 1)} ${esc(c.unit)} · blank means unknown</summary><p class="notice">Enter numbers from the source, then its serving basis. The app calculates your portion; no manual division is needed. Published restaurant data must match the restaurant and serving basis. Estimates are not official restaurant nutrition.</p><label class="phase-label">Nutrition given per (selected units)<input data-field="nutritionBasis" required type="number" min="0.000001" max="1000000" step="any" value="${c.nutritionBasis ?? 1}"></label><div class="phase-fields">${M.NUTRIENTS.map((k) => `<label>${{ kcal: "Calories (kcal)", protein: "Protein (g)", carbs: "Carbohydrate (g)", fat: "Fat (g)", fiber: "Fiber (g)" }[k]} from source<input data-nutrient="${k}" type="number" min="0" max="1000000" step="any" value="${c.nutrients[k] ?? ""}" placeholder="Unknown"></label>`).join("")}</div></details>${btn("remove-component", "Remove component", c.id)}</details>`;
+      )}</select></label><label class="phase-wide">Nutrition source / editable assumptions<input data-field="source" value="${esc(c.source)}" maxlength="500" placeholder="Label, official menu, reference food or unknown"></label><label>Preparation details<input data-field="preparation" value="${esc(c.preparation || "")}" placeholder="Optional: cooked, skin, additions"></label>${mode === "journal" ? `<label>Portion actually consumed (%)<input data-field="consumedPercent" type="number" min="0" max="100" step="any" value="${(c.consumedFraction ?? 1) * 100}"></label>` : ""}<label>Grocery category<select data-field="group">${options(["protein", "grain", "veg", "fat", "sauce", "spice", "other"], c.group || "other")}</select></label></div><details class="phase-advanced"><summary>Nutrition per ${fmt(c.nutritionBasis ?? 1)} ${esc(c.unit)} · blank means unknown</summary><p class="notice">Enter numbers from the source, then its serving basis. The app calculates your portion; no manual division is needed. Published restaurant data must match the restaurant and serving basis. Estimates are not official restaurant nutrition.</p><label class="phase-label">Nutrition given per (selected units)<input data-field="nutritionBasis" required type="number" min="0.000001" max="1000000" step="any" value="${c.nutritionBasis ?? 1}"></label><div class="phase-fields">${M.NUTRIENTS.map((k) => `<label>${{ kcal: "Calories (kcal)", protein: "Protein (g)", carbs: "Carbohydrate (g)", fat: "Fat (g)", fiber: "Fiber (g)", sodium: "Sodium (mg)", saturatedFat: "Saturated fat (g)", sugar: "Sugar (g)", addedSugar: "Added sugar (g)" }[k]} from source<input data-nutrient="${k}" type="number" min="0" max="1000000" step="any" value="${c.nutrients[k] ?? ""}" placeholder="Unknown"></label>`).join("")}</div></details>${btn("remove-component", "Remove component", c.id)}</details>`;
   }
   function drawEditor() {
     const m = draft;
@@ -444,6 +444,7 @@
       };
     for (const el of dialog.querySelectorAll("[data-component]")) {
       const c = draft.components.find((x) => x.id === el.dataset.component);
+      const before = {name:c.name, unit:c.unit, preparation:c.preparation || "", basis:c.nutritionBasis ?? 1, nutrients:M.clone(c.nutrients), source:c.source};
       for (const input of el.querySelectorAll("[data-field]")) {
         const k = input.dataset.field;
         if (k === "consumedPercent") {
@@ -466,8 +467,23 @@
       if (heading)
         heading.textContent = `Nutrition per ${fmt(c.nutritionBasis ?? 1)} ${c.unit} · blank nutrients mean unknown`;
       for (const input of el.querySelectorAll("[data-nutrient]"))
-        c.nutrients[input.dataset.nutrient] =
-          input.value === "" ? null : Number(input.value);
+        if (input.value !== "" || Object.hasOwn(c.nutrients,input.dataset.nutrient))
+          c.nutrients[input.dataset.nutrient] = input.value === "" ? null : Number(input.value);
+      if (c.catalog && (c.name !== before.name || c.unit !== before.unit || (c.preparation || "") !== before.preparation || (c.nutritionBasis ?? 1) !== before.basis)) {
+        c.catalog.modification = "Changed standard item; review nutrition source for this modification.";
+        c.status = "unknown";
+        c.source = "Original menu: " + c.catalog.sourceUrl + "; modified order nutrition unknown.";
+        for (const k of M.NUTRIENTS) c.nutrients[k] = null;
+        for (const input of el.querySelectorAll("[data-nutrient]")) input.value = "";
+        el.querySelector('[data-field="status"]').value = "unknown";
+        el.querySelector('[data-field="source"]').value = c.source;
+      } else if (c.catalog && c.source === before.source && M.NUTRIENTS.some(k => c.nutrients[k] !== before.nutrients[k])) {
+        c.catalog.modification = "User-edited nutrient values; no longer a standard published item.";
+        c.status = "estimate";
+        c.source = "User-edited estimate; original menu: " + c.catalog.sourceUrl;
+        el.querySelector('[data-field="status"]').value = c.status;
+        el.querySelector('[data-field="source"]').value = c.source;
+      }
     }
   }
   function preview() {
@@ -591,6 +607,8 @@
       date: day,
       actual,
       commit,
+      activeProfile,
+      profiles: () => get().profiles,
       onPlate(r) {
         const m = prior || M.blankMeal(day);
         Object.assign(m, {
@@ -606,7 +624,7 @@
         }
         editor(m, target);
       },
-      onReuse(saved, r) {
+      onReuse(saved, r, selectedProfile) {
         const m = M.clone(saved);
         Object.assign(m, {
           id: M.id(),
@@ -620,8 +638,9 @@
         if (target === "plan") {
           delete m.profile;
           m.portions ??= { you: 1, wife: 1 };
+          if (selectedProfile) m.portions = {you:selectedProfile === "you" ? 1 : 0, wife:selectedProfile === "wife" ? 1 : 0};
         } else {
-          m.profile = activeProfile;
+          m.profile = selectedProfile || activeProfile;
           delete m.portions;
         }
         editor(m, target);
@@ -1041,6 +1060,7 @@
       commit(() => {
         for (const k of ["you", "wife"])
           get().profiles[k] = {
+            ...get().profiles[k],
             name: f.get(k + "-name").trim(),
             calories:
               f.get(k + "-calories") === ""

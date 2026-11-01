@@ -111,7 +111,7 @@
       el(
         "p",
         { class: "notice" },
-        "Search restaurants saved in this browser. External search opens a separate site; no integrated place or menu provider is active.",
+        "Search saved restaurants and the offline research directory. Directory entries are not live results; menus appear only after source review. External search opens a separate site.",
       ),
     );
     const form = el("form", {
@@ -134,6 +134,7 @@
       form,
       el("p", { role: "status", "aria-live": "polite" }),
       el("div", { id: "restaurant-results", class: "stack" }),
+      el("div", { id: "restaurant-catalog-results", class: "stack" }),
       el("div", { id: "restaurant-details" }),
     );
     const actions = el("div", { class: "actionbar" });
@@ -183,6 +184,8 @@
       out = dialog.querySelector("#restaurant-results");
     status().textContent = "Searching saved restaurants…";
     out.replaceChildren();
+    const directory = dialog.querySelector("#restaurant-catalog-results");
+    directory.replaceChildren();
     try {
       const rows = await adapter.search({
         name: form.elements.name.value,
@@ -196,6 +199,15 @@
         (rows.length
           ? rows.length + " locally saved restaurant(s)."
           : "No saved matches. You can save a new restaurant or open an external search when online.");
+      const catalog = window.HHCatalog?.catalog;
+      if (window.HHCatalog?.error) directory.append(el("p", {class:"notice"}, window.HHCatalog.error));
+      const records = catalog?.search(form.elements.name.value, form.elements.city.value) || [];
+      if (records.length) directory.append(el("h3", {}, "Offline catalog / research directory — not live results"));
+      for (const r of records) {
+        const card = el("article", {class:"entry catalog-directory"});
+        card.append(el("strong", {}, r.name), el("p", {class:"mini"}, (r.location || "National chain; choose a location externally") + " · " + (r.status === "verified" ? "Reviewed catalog" : "Unverified research entry; no verified menu")), button("Explore " + r.name, () => details({id:r.id, catalogId:r.id, name:r.name, location:r.location, source:r.sourceNote || "Reviewed catalog", provider:"curated", lastChecked:null})));
+        directory.append(card);
+      }
       for (const r of rows) {
         const card = el("article", { class: "entry" });
         card.append(
@@ -307,6 +319,19 @@
         },
       ),
     );
+    const catalogArea = el("section", {id:"restaurant-catalog"});
+    area.append(catalogArea);
+    window.HHCatalogUI?.render(catalogArea, r, {
+      ...context,
+      onOrder(components, profile) {
+        const saved = saveRestaurant();
+        if (!saved) return;
+        const m = M.blankMeal(context.date);
+        m.kind = "Restaurant"; m.name = r.name + " custom order"; m.components = components;
+        dialog.close();
+        context.onReuse?.(m, saved, profile);
+      },
+    });
     area.append(actions, el("h3", {}, "Saved plates and past meals"));
     const state = window.HealthHub.state.phase2;
     const rows = [

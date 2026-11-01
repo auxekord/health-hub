@@ -307,3 +307,14 @@ button {
   background: #1b211b;
   padding: 8px 0;
 }
+/* Restaurant menu cards share the existing dark/lime design. */
+.catalog-panel {margin:1.25rem 0;padding:1rem;border:1px solid var(--line);border-radius:18px;}
+.catalog-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;}
+.catalog-panel fieldset {min-width:0;border:1px solid var(--line);border-radius:12px;}
+.catalog-check {display:flex;align-items:center;gap:12px;min-height:44px;}
+.catalog-check input {width:22px;height:22px;}
+.catalog-source {display:inline-block;min-height:44px;overflow-wrap:anywhere;color:var(--lime);}
+.catalog-panel .entry {overflow-wrap:anywhere;}
+.catalog-order-item {margin:10px 0;}
+.catalog-panel select,.catalog-panel input {max-width:100%;}
+.catalog-preferences {margin:1rem 0;}

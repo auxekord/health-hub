@@ -124,12 +124,16 @@ test("unsafe links and malformed imported restaurant IDs are rejected without ch
   await nav(page, "progress");
   const malicious = structuredClone(before);
   malicious.phase2.restaurants[0].id = '"><svg onload=alert(1)>';
-  page.once("dialog", (d) => d.accept());
+  const rejection = page.waitForEvent("dialog");
   await page.locator("#import").setInputFiles({
     name: "fictional-malicious.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(malicious)),
   });
+  const rejected = await rejection;
+  expect(rejected.message()).toContain("Invalid");
+  await rejected.accept();
+  await expect(page.locator("#import")).toHaveValue("");
   expect((await state(page)).phase2.restaurants).toEqual(
     before.phase2.restaurants,
   );

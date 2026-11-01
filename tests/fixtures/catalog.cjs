@@ -1,0 +1,7 @@
+// Entirely synthetic menu data. Never copied into application or preview assets.
+module.exports = function fixture() {
+  const date = new Date().toISOString().slice(0,10);
+  const sources = ['identity','menu','nutrition','dietary'].map(id => ({ id, publisher:'Fictional test publisher', type:'official', url:'https://example.org/fictional-test/'+id, verifiedAt:date, evidence:'Synthetic regression fixture, not an actual restaurant source.', permission:'Synthetic test content authored for this repository.' }));
+  const item = (id,name,role,category,values) => ({id,name,role,category,serving:'One synthetic standard serving; not real restaurant data',menuSourceId:'menu',nutritionSourceId:'nutrition',dietarySourceId:'dietary',nutrients:{kcal:350,protein:25,carbs:30,fat:12,fiber:6,sodium:450,saturatedFat:3,sugar:4,addedSugar:1,...values},allergens:{complete:true,contains:[],mayContain:[]},dietary:{vegetarian:true,vegan:true,'no-pork':true}});
+  return {version:1,sources,restaurants:[{id:'synthetic-restaurant',name:'Fictional Test Kitchen',location:'Fictional City',category:'Synthetic regression fixture',scope:'local',status:'verified',sourceId:'identity',items:[item('plate','Synthetic breakfast plate','main','Breakfast',{}),item('sandwich','Synthetic sandwich','main','Lunch',{kcal:500,protein:40,sodium:900,addedSugar:null}),item('drink','Synthetic beverage','drink','Beverages',{kcal:10,protein:0,carbs:2,fat:0,fiber:0,sodium:5,saturatedFat:0,sugar:0,addedSugar:0})]}]};
+};

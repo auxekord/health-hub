@@ -29,3 +29,11 @@ Restaurant meals are excluded from groceries. Deliberate conversion to a home-co
 ## Limitations
 
 No automatic menus, prices, official nutrition, place verification, geolocation or provider availability claims. No authentication or device sync. User-entered URLs may still lead to untrustworthy sites; HTTPS is transport validation, not content certification. No private journal information is sent to a search provider. Android tablet screenshots use Chromium emulation, not a physical tablet.
+
+## Menu/catalog extension
+
+The local saved-restaurant provider remains intact. `HHCatalog.catalog.search(name, city)` supplies a separately labeled offline directory/reviewed catalog from versioned source data, not an activated external provider. Name matching handles straight/curly apostrophes; national-chain matches do not assert a location. Local entries require matching location text. Catalog identities, item IDs, menu/nutrition/dietary sources and review dates are validated. Sources older than the 90-day editorial review window are not eligible for current menu ordering/recommendations.
+
+Menu cards support categories and named standard serving/size descriptions. The transient basket supports multiple items, independent quantities, removal, custom unknown components, recorded substitutions and a saved order comparison. Unsupported modifications never inherit standard nutrition. Review opens the existing plan/journal editor; it does not automatically save consumption. A chosen profile is retained for logging and initially receives the planned portion, with the other member editable in confirmation. Favorites preserve provenance; repeats remain reviewable snapshots.
+
+Optional per-profile allergy/restriction settings and limits remain browser-local. Current recommendation eligibility, ordering and uncertainty are documented in RECOMMENDATION_ENGINE.md. The shipped data contains no verified menu items because official-source access failed. Synthetic test menu fixtures are not shipped. Brand preview screens display unavailable menus rather than invented listings. See MENU_SOURCES.md for the empty verified source register and RESTAURANT_COVERAGE.md for unblock steps.

@@ -3,7 +3,7 @@
   "use strict";
   const CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Snack"];
   const SOURCES = ["Restaurant", "Home-cooked", "Packaged", "Custom"];
-  const NUTRIENTS = ["kcal", "protein", "carbs", "fat", "fiber"];
+  const NUTRIENTS = ["kcal", "protein", "carbs", "fat", "fiber", "sodium", "saturatedFat", "sugar", "addedSugar"];
   const UNITS = [
     "g",
     "kg",
@@ -44,13 +44,14 @@
         (num(c.consumedFraction) && c.consumedFraction <= 1)) &&
       ["unknown", "estimate", "verified"].includes(c.status) &&
       object(c.nutrients) &&
-      NUTRIENTS.every((k) => c.nutrients[k] === null || num(c.nutrients[k])) &&
+      NUTRIENTS.every((k) => c.nutrients[k] === null || num(c.nutrients[k]) || (["sodium", "saturatedFat", "sugar", "addedSugar"].includes(k) && c.nutrients[k] === undefined)) &&
       (c.wifeQuantity === undefined || num(c.wifeQuantity)) &&
       (c.group === undefined ||
         ["protein", "grain", "veg", "fat", "sauce", "spice", "other"].includes(
           c.group,
         )) &&
-      (NUTRIENTS.every((k) => c.nutrients[k] === null) ||
+      (c.catalog === undefined || (object(c.catalog) && stable(c.catalog.restaurantId) && stable(c.catalog.itemId) && safeURL(c.catalog.sourceUrl) && date(c.catalog.verifiedAt) && text(c.catalog.serving) && text(c.catalog.modification) && text(c.catalog.allergenWarning))) &&
+      (NUTRIENTS.every((k) => c.nutrients[k] == null) ||
         (c.status !== "unknown" && c.source.trim().length > 0))
     );
   }
@@ -117,6 +118,7 @@
       r.name.trim() &&
       text(r.location) &&
       (r.id === undefined || stable(r.id)) &&
+      (r.catalogId === undefined || stable(r.catalogId)) &&
       ["website", "menuUrl"].every(
         (k) => r[k] === undefined || (text(r[k]) && safeURL(r[k]) !== null),
       ) &&
@@ -129,6 +131,9 @@
         "updatedAt",
       ].every((k) => r[k] === undefined || r[k] === null || text(r[k]))
     );
+  }
+  function preferences(p) {
+    return p === undefined || (object(p) && ["allergens", "restrictions"].every(k => Array.isArray(p[k]) && p[k].length <= 20 && p[k].every(x => (k === "allergens" ? ["milk","egg","fish","shellfish","tree-nut","peanut","wheat","soy","sesame"] : ["vegetarian","vegan","no-pork"]).includes(x))) && text(p.other || "") && ["sodium","addedSugar","saturatedFat"].every(k => p[k] == null || num(p[k])));
   }
   function valid(s) {
     return (
@@ -159,6 +164,7 @@
         (k) =>
           object(s.profiles[k]) &&
           text(s.profiles[k].name) &&
+          preferences(s.profiles[k].preferences) &&
           (s.profiles[k].calories === null || num(s.profiles[k].calories)) &&
           (s.profiles[k].protein === null || num(s.profiles[k].protein)) &&
           (s.profiles[k].goalWeight === null || num(s.profiles[k].goalWeight)),
@@ -291,7 +297,7 @@
               ? null
               : base * (c.consumedFraction ?? 1);
         if (q === 0) continue;
-        if (q === null || c.nutrients[k] === null) {
+        if (q === null || c.nutrients[k] == null) {
           partial = true;
           continue;
         }
@@ -415,6 +421,7 @@
     return result;
   }
   root.HHModel = {
+    preferences,
     merge,
     safeURL,
     restaurant,
