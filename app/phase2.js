@@ -18,6 +18,7 @@
     journalDate = localDay(),
     activeProfile = "you",
     draft = null,
+    replacementContext = null,
     mode = "plan",
     legacyRef = null,
     lastFocus = null,
@@ -366,7 +367,8 @@
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
   document.body.append(status);
-  function editor(m, kind = "plan", ref = null) {
+  function editor(m, kind = "plan", ref = null, replacement = null) {
+    replacementContext = replacement;
     lastFocus = document.activeElement;
     draft = M.clone(m);
     mode = kind;
@@ -376,6 +378,7 @@
     $("meal-name").focus();
   }
   function closeEditor() {
+    replacementContext = null;
     dialog.close();
     draft = null;
     lastFocus?.focus();
@@ -412,6 +415,18 @@
       .join(
         "",
       )}</datalist><label>Location<input name="location" value="${esc(m.location)}" maxlength="150"></label><label class="phase-wide">Notes / portion assumptions<textarea name="notes" maxlength="2000">${esc(m.notes)}</textarea></label>${mode === "journal" ? `<label class="phase-wide">Leftovers not eaten<textarea name="leftovers" maxlength="1000" placeholder="Describe what was left; only eaten quantities belong below.">${esc(m.leftovers)}</textarea></label>` : ""}</div>${m.kind === "Restaurant" ? `<div class="actionbar">${btn("choose-restaurant", "Find or reuse restaurant")}</div><p class="notice">No official menu is assumed. Enter what you actually selected; unknown portions and nutrients may stay blank.</p>` : ""}<h3>Build your plate</h3><p class="notice">Unknown amounts may be left blank. No restaurant quantities or nutrition are assumed for you.</p><div id="component-list">${m.components.map(componentHTML).join("")}</div>${btn("add-component", "+ Add component")}<div id="editor-totals" class="phase-summary"></div><p id="editor-error" class="phase-error" role="alert"></p><div class="actionbar"><button class="btn" id="save-meal" type="submit">${mode === "plan" ? "Save planned meal" : "Save journal entry"}</button>${btn("close-editor", "Cancel")}</div></form>`;
+    if (replacementContext) {
+      const {source,profile} = replacementContext;
+      $("meal-editor-title").textContent = "Customize replacement";
+      $("save-meal").textContent = "Confirm replacement";
+      const note=document.createElement('p');note.className='notice';note.textContent='Steps 4–5 of 5 · Review and confirm for '+get().profiles[profile].name+'. No plan or journal entry has changed.';$("meal-form").prepend(note);
+      const kinds=$("meal-form").elements.kind;for(const option of [...kinds.options])if(option.value !== (source==='home'?'Home-cooked':'Restaurant'))option.remove();
+      if(source==='restaurant')$("recipe-picker").closest('label').hidden=true;
+      $("meal-form").elements.includeGroceries.closest('label').hidden=true;
+      const fav=$("favorite-picker");for(const option of [...fav.options])if(option.value){const f=get().favorites.find(x=>x.id===option.value);if(f?.kind!==(source==='home'?'Home-cooked':'Restaurant'))option.remove();}
+      if(source==='home')for(const name of ['restaurant','location'])$("meal-form").elements[name].closest('label').hidden=true;
+      const favorite=document.createElement('label'),check=document.createElement('input');favorite.className='catalog-check';check.type='checkbox';check.name='replacementFavorite';favorite.append(check,document.createTextNode(' Save confirmed replacement as a favorite'));$("save-meal").parentElement.before(favorite);
+    }
     preview();
   }
   function readEditor() {
@@ -511,7 +526,7 @@
     for (const c of draft.components) {
       if (
         c.nutrients.kcal !== null ||
-        M.NUTRIENTS.some((k) => c.nutrients[k] !== null)
+        M.NUTRIENTS.some((k) => c.nutrients[k] != null)
       ) {
         if (c.status === "unknown") {
           error.textContent =
@@ -549,6 +564,13 @@
         return;
       }
     }
+    if (replacementContext) {
+      const live=get().plans.find(m=>m.id===replacementContext.original.id);
+      if (!live || JSON.stringify(live)!==JSON.stringify(replacementContext.original)) { error.textContent='The original plan changed or was removed. Cancel and reopen replacement; nothing was overwritten.';return; }
+      if (draft.kind!==(replacementContext.source==='home'?'Home-cooked':'Restaurant')){error.textContent='Use the selected preparation source.';return;}
+    }
+    const saveFavorite=!!$("meal-form").elements.replacementFavorite?.checked;
+    const replacement=replacementContext;
     const copy = M.clone(draft);
     const originalEntry = get().journal.find((x) => x.id === copy.id);
     if (
@@ -560,6 +582,8 @@
     delete copy.legacy;
     const ok = commit(
       () => {
+        if (replacement?.restaurant && copy.restaurant===replacement.restaurant.name && !get().restaurants.some(r=>r.id===replacement.restaurant.id || (r.name===replacement.restaurant.name && r.location===replacement.restaurant.location)))get().restaurants.push(M.clone(replacement.restaurant));
+        if(saveFavorite){const f=M.clone(copy);f.id=M.id();f.plannedId=null;get().favorites.push(f);}
         const list = mode === "plan" ? get().plans : get().journal;
         const ix = list.findIndex((x) => x.id === copy.id);
         if (ix >= 0) list[ix] = copy;
@@ -592,6 +616,7 @@
         : "Meal saved. You can edit it in Journal.",
     );
     if (ok) {
+      if(replacement)activeProfile=replacement.profile;
       journalDate = copy.date;
       closeEditor();
       H.nav(mode === "plan" ? "plan" : "journal");
@@ -601,6 +626,7 @@
   }
   function browseRestaurants(target) {
     const prior = draft ? M.clone(draft) : null;
+    if(replacementContext){const {original,profile}=replacementContext;closeEditor();window.HHReplacement.open(original,profile);return;}
     const day = draft?.date || (target === "plan" ? week : journalDate);
     window.HHRestaurants.open({
       mode: target,
@@ -742,14 +768,7 @@
       editor(m);
       notice("Choose the new date before saving the duplicate.");
     } else if (action === "replace-plan" && plan) {
-      const m = M.blankMeal(plan.date);
-      Object.assign(m, {
-        id: plan.id,
-        time: plan.time,
-        category: plan.category,
-        portions: plan.portions,
-      });
-      editor(m);
+      window.HHReplacement.open(plan);
     } else if (action === "delete-plan") {
       commit(
         () => {
@@ -939,6 +958,7 @@
         id: old.id,
         time: old.time,
         plannedId: old.plannedId,
+        ...(replacementContext ? {date:old.date,time:old.time,category:old.category,portions:M.clone(old.portions),kind:replacementContext.source==="home"?"Home-cooked":"Restaurant"} : {}),
       });
       if (mode === "journal") {
         draft = M.consumed(draft, old.profile);
@@ -957,6 +977,7 @@
         date: old.date,
         time: old.time,
         plannedId: old.plannedId,
+        ...(replacementContext ? {date:old.date,time:old.time,category:old.category,portions:M.clone(old.portions),kind:replacementContext.source==="home"?"Home-cooked":"Restaurant"} : {}),
       });
       if (mode === "journal") {
         draft.profile = old.profile;
@@ -1089,6 +1110,7 @@
     }
   });
   dialog.addEventListener("cancel", () => {
+    replacementContext = null;
     draft = null;
   });
   window.HHPhase = {

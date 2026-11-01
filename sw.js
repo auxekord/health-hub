@@ -1,6 +1,6 @@
 const PREFIX = 'health-hub-';
-const CACHE = 'health-hub-phase2-catalog-2';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './app/data-safety.js', './app/privacy-ui.js', './app/privacy.css','./app/model.js','./app/phase2.js','./app/phase2.css','./app/restaurants.js', './app/catalog-data.js', './app/catalog.js', './app/catalog-ui.js'];
+const CACHE = 'health-hub-phase2-replacement-1';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './app/data-safety.js', './app/privacy-ui.js', './app/privacy.css','./app/model.js','./app/phase2.js','./app/phase2.css','./app/replacement.js', './app/restaurants.js', './app/catalog-data.js', './app/catalog.js', './app/catalog-ui.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
 });

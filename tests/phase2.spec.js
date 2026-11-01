@@ -127,6 +127,8 @@ test("seven-day planner, independent portions, edit, move, duplicate, replace, r
   await p(page, "reuse-week").click();
   expect((await phase(page)).plans).toHaveLength(s.plans.length);
   await page.locator('#week-connected [data-p="replace-plan"]').first().click();
+  await page.getByRole('button',{name:'Cooked or prepared at home',exact:true}).click();
+  await page.getByRole('button',{name:'Create custom home-prepared meal',exact:true}).click();
   await form(page).locator('[name="name"]').fill("Replacement dinner");
   await component(page, 0, { name: "Potato", quantity: 80 });
   await save(page);

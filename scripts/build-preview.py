@@ -3,7 +3,7 @@
 from pathlib import Path
 import re,json,hashlib,base64,zipfile,shutil,subprocess
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'dist/health-hub-demo';KEY='healthhub-demo-phase2-hybrid-v2'
-paths=['index.html','manifest.webmanifest','sw.js','icon.svg','app/model.js','app/data-safety.js','app/privacy-ui.js','app/privacy.css','app/phase2.js','app/phase2.css','app/restaurants.js','app/catalog-data.js','app/catalog.js','app/catalog-ui.js','app/demo.js','app/bootstrap.js','app/demo.css','_headers','robots.txt']
+paths=['index.html','manifest.webmanifest','sw.js','icon.svg','app/model.js','app/data-safety.js','app/privacy-ui.js','app/privacy.css','app/phase2.js','app/phase2.css','app/restaurants.js','app/replacement.js','app/catalog-data.js','app/catalog.js','app/catalog-ui.js','app/demo.js','app/bootstrap.js','app/demo.css','_headers','robots.txt']
 files={p:(ROOT/p).read_text() for p in paths if p not in ['app/demo.js','app/bootstrap.js','app/demo.css','_headers','robots.txt']}
 for name in ['demo.js','bootstrap.js','demo.css']:files['app/'+name]=(ROOT/'preview'/name).read_text()
 html=files['index.html'].replace('Powered by Open Food Facts. Search results require an internet connection.','Fictional local products only. No external food service is contacted.');html=html.replace('<script src="app/data-safety.js">','<script src="app/demo.js"></script><script src="app/data-safety.js">',1).replace('</body>','<script src="app/bootstrap.js"></script></body>').replace('</head>','<link rel="stylesheet" href="app/demo.css"></head>').replace('<title>Health Hub — The Daily Pulse</title>','<title>Health Hub — Demo Preview</title>')
@@ -26,7 +26,7 @@ store=files['app/data-safety.js'];a=store.index('  const defaults =');b=store.in
 files['app/data-safety.js']=store[:a]+'  const defaults=()=>window.HealthHubDemo.initialState();\n'+store[b:]
 for name in files:files[name]=files[name].replace('healthhub-v5',KEY)
 manifest=json.loads(files['manifest.webmanifest']);manifest.update(name='Health Hub — Demo Preview',short_name='HH Demo',id='./demo-preview');files['manifest.webmanifest']=json.dumps(manifest,indent=2)+'\n'
-worker=files['sw.js'].replace("'health-hub-'","'health-hub-demo-'").replace("'health-hub-phase2-catalog-2'","'health-hub-demo-catalog-2'")
+worker=files['sw.js'].replace("'health-hub-'","'health-hub-demo-'").replace("'health-hub-phase2-replacement-1'","'health-hub-demo-replacement-1'")
 a=worker.index('const SHELL =');b=worker.index(';',a)
 shell=['./']+['./'+p for p in paths if p not in ['sw.js','_headers','robots.txt']]
 files['sw.js']=worker[:a]+'const SHELL = '+json.dumps(shell)+worker[b:]

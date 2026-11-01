@@ -18,35 +18,36 @@ CSP connects only to self. Explicit public source/map/menu links open separately
 
 | File | Bytes |
 | --- | ---: |
-| `index.html` | 122943 |
+| `index.html` | 122985 |
 | `manifest.webmanifest` | 376 |
-| `sw.js` | 1320 |
+| `sw.js` | 1348 |
 | `icon.svg` | 313 |
 | `app/model.js` | 14243 |
 | `app/data-safety.js` | 8433 |
 | `app/privacy-ui.js` | 10621 |
 | `app/privacy.css` | 931 |
-| `app/phase2.js` | 53573 |
-| `app/phase2.css` | 6285 |
-| `app/restaurants.js` | 15208 |
+| `app/phase2.js` | 56575 |
+| `app/phase2.css` | 6338 |
+| `app/restaurants.js` | 15797 |
+| `app/replacement.js` | 5020 |
 | `app/catalog-data.js` | 280606 |
-| `app/catalog.js` | 10313 |
-| `app/catalog-ui.js` | 13745 |
+| `app/catalog.js` | 10561 |
+| `app/catalog-ui.js` | 13871 |
 | `app/demo.js` | 5896 |
 | `app/bootstrap.js` | 1465 |
 | `app/demo.css` | 362 |
 | `_headers` | 595 |
 | `robots.txt` | 26 |
 
-**19 files**, **547254 uncompressed bytes**, **86169 ZIP bytes**.
+**20 files**, **556362 uncompressed bytes**, **89481 ZIP bytes**.
 
-SHA-256: `3ac1543fe50d907c84eb11022de77bd9471a21f9994e2046d9f9db6f560da74a`.
+SHA-256: `6114a8f241adbcc65ded8cb1c9437077a14f9f2d17ede3305f03090042c58916`.
 
-`artifacts/preview-verification.json` records all file hashes, 12 checks and actual catalog coverage. The original `dc46faf` archive remains separately preserved as `artifacts/health-hub-phase2-demo-dc46faf.zip`; the new ZIP has not replaced any hosted preview.
+`artifacts/preview-verification.json` records all file hashes and 12 checks. The previously reviewed `9a2cb2b` ZIP is preserved separately as `artifacts/health-hub-phase2-demo-9a2cb2b.zip` (86,169 bytes; SHA-256 `3ac1543fe50d907c84eb11022de77bd9471a21f9994e2046d9f9db6f560da74a`). No hosted preview was replaced.
 
 ## Validation and privacy review
 
-144 application tests and 27 preview tests passed. All 12 privacy/integrity build checks passed. Original 139 recipes and instructions remain intact. Manual code-path review supplements scanning for disabled imports, namespace isolation and absence of real household data. Fifteen fictional-household screenshots include real menu cards, unknown-value customization and published-data suggestions. Automated checks are evidence, not a guarantee against every possible sensitive string.
+160 application tests and 30 preview tests passed. All 12 privacy/integrity build checks passed. Original 139 recipes and instructions remain intact. Manual code-path review supplements scanning for disabled imports, namespace isolation and absence of real household data. Twenty-two fictional-household screenshots include real menu cards, unknown-value customization and published-data suggestions. Automated checks are evidence, not a guarantee against every possible sensitive string.
 
 ## Future hosting — separate approval required
 
@@ -55,3 +56,7 @@ Proposed free Cloudflare Pages Direct Upload URL: `https://<available-project-na
 After explicit approval: use a free Cloudflare account → Workers & Pages → Pages Direct Upload (labels may vary), choose an available project name and upload only this ZIP/extracted allowlisted assets. Review the asset list first. Tablet landscape/Desktop site can help; use a computer if its file picker cannot upload the ZIP. Do not connect the repository, replace the current preview, alter GitHub Pages or upload the whole checkout. Confirm current free-tier limits before deployment.
 
 No project, upload, hosted-preview replacement, production deployment or PR merge was performed. Browser storage still lacks synchronization/authentication and can be evicted; use fictional data only. Physical Android and hosted install/offline behavior remain unverified. Continue source/rights review as coverage expands; site restrictions are respected.
+
+## Replacement improvement
+
+The new replacement picker is included in the static allowlist. Home and restaurant paths retain original plan identity/date/slot/portions until explicit confirmation. Staged restaurant details are not saved on cancel; replacements never become journal entries automatically. See REPLACEMENT_WORKFLOW.md for behavior and limits. No deployment approval is implied by this rebuilt archive.

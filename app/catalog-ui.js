@@ -23,7 +23,7 @@
     if (!record) return;
     const freshItems = record.items.filter(i => engine.itemCurrent(record, i)), staleItems = record.items.filter(i => !engine.itemCurrent(record, i));
     area.className = 'catalog-panel';
-    area.append(el('h3', record.name + ' — menu & orders'), el('h3', 'Recommended for You'), el('p', record.category + ' · ' + (record.status === 'verified' ? 'Reviewed catalog; not live search or a location availability guarantee.' : 'Research directory — unverified, not a live search result.'), { class: 'notice' }));
+    area.append(el('h3', record.name + ' — menu & orders'), el('h3', context.replacement ? 'Suggested Meal' : 'Recommended for You'), el('p', record.category + ' · ' + (record.status === 'verified' ? 'Reviewed catalog; not live search or a location availability guarantee.' : 'Research directory — unverified, not a live search result.'), { class: 'notice' }));
     const controls = el('div', null, { class: 'phase-fields' });
     const profile = field(controls, 'Household member for this order', 'select', { 'data-catalog': 'profile' });
     for (const k of ['you', 'wife']) profile.append(el('option', context.profiles()[k].name, { value: k }));
@@ -83,7 +83,7 @@
     customForm.addEventListener('submit', e => { e.preventDefault(); const c = M.blankComponent(customName.value.trim()); if (!c.name) return; c.quantity = customQuantity.value === '' ? null : Number(customQuantity.value); c.unit = customUnit.value; cart.push({ custom: c }); customForm.reset(); drawCart(); });
     const total = el('p', '', { 'data-catalog': 'totals', role: 'status', class: 'notice' });
     const compare = el('div', null, { 'data-catalog': 'comparison', class: 'notice' });
-    const review = button(context.mode === 'plan' ? 'Review order before planning' : 'Review order before logging', () => {
+    const review = button(context.mode === 'plan' ? (context.replacement ? 'Customize replacement order' : 'Review order before planning') : 'Review order before logging', () => {
       if ([...basket.querySelectorAll('input')].some(input => !input.reportValidity())) return;
       if (!cart.length) { total.textContent = 'Add at least one item or custom component.'; return; }
       context.onOrder(components(), profile.value); // Confirmation opens existing editor; never saves consumption here.
@@ -120,7 +120,7 @@
       if (comparison) compare.append(el('h4', 'Saved comparison: ' + comparison.label), el('p', comparison.totals), el('h4', 'Current order'), el('p', cart.length ? totals(components()) : 'Empty'));
     }
     function recommend() {
-      const p = context.profiles()[profile.value], result = engine.recommend(record, p, priority.value, Number(share.value) / 100);
+      const p = context.profiles()[profile.value], result = engine.recommend(record, p, priority.value, Number(share.value) / 100, undefined, context.category);
       recs.replaceChildren(el('p', p.name + ' · ' + result.message, { class: 'notice' }));
       for (const m of result.meals) {
         const card = el('article', null, { class: 'entry', 'data-catalog': 'suggestion' }); card.append(el('h4', m.items.map(i => i.name).join(' + ')), el('strong', m.personalized ? 'Compared with your saved goals' : 'General comparison — not personalized'), el('p', totals(m.items.map(i => engine.component(record, i)))));

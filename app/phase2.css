@@ -320,3 +320,5 @@ button {
 .catalog-preferences {margin:1rem 0;}
 
 .catalog-menu-item small {display:block;}
+
+.phase-dialog [hidden] { display:none !important; }

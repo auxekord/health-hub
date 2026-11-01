@@ -37,3 +37,7 @@ Tradeoffs disclose known/unknown sodium, saturated fat, added sugar and fiber, p
 ## Next steps
 
 Continue reviewing additional publications and rights, expand the initial catalog, and have the user assess suggestions against real preferences. Broader meal combinations, medical diets, automatic menu updates and external providers are not activated.
+
+## Replacement meal slot
+
+Replacement calls supply the original category as an optional recommendation filter. Breakfast uses breakfast/coffee/beverage categories, lunch/dinner exclude breakfast, and snacks use non-main roles. No duplicate self-pair is generated. The full published menu remains manually browsable; filtering does not guarantee time-of-day availability. Existing source/goal/allergy rules remain unchanged.

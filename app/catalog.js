@@ -51,7 +51,7 @@
       if (modification) { c.name += ' — customized'; c.preparation = modification; c.source += '; Customized: nutrition unknown until re-sourced.'; }
       return c;
     }
-    function recommend(r, profile, priority = 'balanced', share = .3, now) {
+    function recommend(r, profile, priority = 'balanced', share = .3, now, mealCategory) {
       if (!Object.hasOwn(PRIORITIES, priority) || !Number.isFinite(share) || share < .1 || share > 1) return { meals: [], message: 'Choose a supported priority and meal share.' };
       const pref = profile?.preferences || { allergens: [], restrictions: [] };
       if (!preferences(profile?.preferences) || pref.other?.trim()) return { meals: [], message: 'Other dietary restrictions require manual review; no meal is recommended.' };
@@ -60,9 +60,9 @@
         requirements.every(k => i.nutrients[k] != null) &&
         (!pref.allergens?.length || (i.allergens.complete && current(i.dietarySourceId, now) && !pref.allergens.some(x => i.allergens.contains.includes(x) || i.allergens.mayContain.includes(x)))) &&
         (!pref.restrictions?.length || (current(i.dietarySourceId, now) && pref.restrictions.every(x => i.dietary[x] === true)));
-      const items = r.items.filter(safe), mains = items.filter(i => i.role === 'main');
+      const items = r.items.filter(safe).filter(i=>!mealCategory || (mealCategory==='Breakfast' ? /breakfast|coffee|beverage|drink/i.test(i.category) : mealCategory==='Snack' ? i.role!=='main' : !/breakfast/i.test(i.category))), mains = items.filter(i => mealCategory==='Snack' || i.role === 'main');
       let combinations = mains.map(i => [i]);
-      for (const main of mains) for (const side of items.filter(i => ['side', 'drink'].includes(i.role))) if (combinations.length < 120) combinations.push([main, side]);
+      for (const main of mains) for (const side of items.filter(i => ['side', 'drink'].includes(i.role))) if (side.id!==main.id && combinations.length < 120) combinations.push([main, side]);
       const personalized = profile?.calories > 0 && profile?.protein > 0;
       const budget = personalized ? profile.calories * share : null, protein = personalized ? profile.protein * share : null;
       let meals = combinations.map(order => {

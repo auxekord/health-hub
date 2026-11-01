@@ -2,12 +2,7 @@
 
 ## Final automated runs
 
-- `npm test -- --reporter=line --output=/tmp/hh-published-acceptance-results`: **144 passed**, 1.8 minutes, desktop/mobile Chromium. Preserves 100 prior production/security/Phase 2 cases and 38 catalog-foundation cases, plus six published-source/catalog workflows.
-- `npm run test:preview -- --reporter=line --output=/tmp/hh-published-preview-acceptance-results`: **27 passed**, 52.3 seconds, desktop/mobile/emulated tablet.
-- `npm run build:preview`: **12 privacy/integrity checks passed**, 139 original recipe definitions unchanged. The unverified-directory entries still contain no menu items; actual reviewed menu data is separately attributed.
-- JavaScript syntax, original inline CSS/CSP directive preservation, ZIP allowlist/hash and `git diff --check` verified.
-
-Browser: Chromium on Debian Linux, with Playwright desktop/mobile and 800×1280 tablet emulation. Physical Android was not tested. Source access uses TLS-validating Python HTTPS; headless external navigation encountered a certificate-trust error and was not bypassed. This does not affect internal browser tests.
+The latest meal-replacement validation is recorded below. The preserved baseline comprised 144 application tests and 27 preview tests; eight desktop/mobile replacement scenarios and one scenario across three preview viewports extend it to 160/30.
 
 ## Menu/catalog regression coverage
 
@@ -34,3 +29,11 @@ The allowlisted 19-file build excludes Git history, backups, tests/fixtures, scr
 15 screenshots use fictional household records, with real public menu facts where available. Three updated brand screens show actual menu cards; Dunkin' shows missing verification; the new recommendation screen uses published Chick-fil-A data. No personal health records were used. The gallery is `artifacts/SCREENSHOTS.md`.
 
 Dunkin' and several other sites still restrict requests. Eighteen identities remain explicitly unverified. Full comprehensive restaurant coverage, real-device ergonomics/installability and hosted preview behavior remain unverified. No Cloudflare deployment, production change or PR merge was performed.
+
+## Meal replacement validation
+
+Commands: `npm test -- --reporter=line --output=/tmp/hh-replace-final` and `npm run test:preview -- --reporter=line --output=/tmp/hh-replace-preview-final`. Final outcomes: **160 passed (2.0m)** and **30 passed (1.0m)**, respectively. The first full run already passed 160 application cases and 30 preview cases. Visual review then caught scoped label styles overriding the browser's hidden attribute and unstyled recipe-search inputs. The dialogs now explicitly honor hidden controls, use existing dark form styles and hide inapplicable grocery toggles during replacement; visibility assertions were added. No security assertions were weakened.
+
+Eight replacement scenarios run on both application viewports. They cover source/cancel, 139 searchable original recipes/instructions, custom home cancellation, reviewed restaurant and slot-relevant suggestions, household context/portions, unknown independent-menu nutrition, atomic favorites, no journal/duplicate/grocery regressions, stale-original protection and tablet width. The preview scenario covers both paths, confirmation/persistence and disabled imports on desktop/mobile/tablet.
+
+22 fictional-household screenshots include preparation choice, recipe search, home confirmation, restaurant selection, suggested meal, restaurant confirmation and insufficient-nutrition fallback. Physical Android and hosted preview checks remain unverified. All source catalog/recipe/security/backup coverage is retained.

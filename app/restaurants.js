@@ -103,7 +103,7 @@
     dialog.replaceChildren();
     const head = el("div", { class: "row" });
     head.append(
-      el("h2", { id: "restaurant-browser-title" }, "Find or save a restaurant"),
+      el("h2", { id: "restaurant-browser-title" }, context.replacement ? "Replace meal: choose a restaurant" : "Find or save a restaurant"),
       button("Close", () => dialog.close()),
     );
     dialog.append(
@@ -184,8 +184,10 @@
       out = dialog.querySelector("#restaurant-results");
     status().textContent = "Searching saved restaurants…";
     out.replaceChildren();
+    out.hidden=false;
     const directory = dialog.querySelector("#restaurant-catalog-results");
     directory.replaceChildren();
+    directory.hidden=false;
     try {
       const rows = await adapter.search({
         name: form.elements.name.value,
@@ -202,6 +204,7 @@
       const catalog = window.HHCatalog?.catalog;
       if (window.HHCatalog?.error) directory.append(el("p", {class:"notice"}, window.HHCatalog.error));
       const records = catalog?.search(form.elements.name.value, form.elements.city.value) || [];
+      records.sort((a,b)=>(b.status==="verified")-(a.status==="verified"));
       if (records.length) directory.append(el("h3", {}, "Offline catalog / research directory — not live results"));
       for (const r of records) {
         const card = el("article", {class:"entry catalog-directory"});
@@ -332,6 +335,7 @@
         context.onReuse?.(m, saved, profile);
       },
     });
+    if(context.replacement){dialog.querySelector('#restaurant-results').hidden=true;dialog.querySelector('#restaurant-catalog-results').hidden=true;catalogArea.scrollIntoView({block:'start'});dialog.scrollTop=Math.max(0,dialog.scrollTop-150);}
     area.append(actions, el("h3", {}, "Saved plates and past meals"));
     const state = window.HealthHub.state.phase2;
     const rows = [
@@ -407,6 +411,7 @@
         "Check the restaurant name, location and links.";
       return null;
     }
+    if(context.deferSave){selected=r;status().textContent="Restaurant details staged. Confirm replacement to save; the original plan is unchanged.";return r;}
     const existing = window.HealthHub.state.phase2.restaurants;
     const byId = existing.findIndex((x) => x.id === r.id),
       byName = existing.findIndex((x) => key(x) === key(r));

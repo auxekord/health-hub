@@ -79,3 +79,7 @@ See [integration report](PHASE2_INTEGRATION_REPORT.md), [restaurant implementati
 ## Published offline restaurant menus
 
 Five reviewed restaurant snapshots contain 291 selectable items: McDonald's, Fixins Detroit, Sexy Steak, Chick-fil-A and Zukin's Rib Shack. Seventeen items have some published nutrition; missing values remain unknown. Eighteen other requested names remain explicitly unverified research entries, including Dunkin' where source access was denied. See [coverage](RESTAURANT_COVERAGE.md), [source register](MENU_SOURCES.md), [provider comparison](RESTAURANT_DATA_PROVIDERS.md), and [recommendation rules](RECOMMENDATION_ENGINE.md). Public source review does not mean live availability or complete restaurant coverage.
+
+## Source-aware meal replacement
+
+Plan replacement now asks home versus restaurant first, uses the existing recipe/catalog workflows, and preserves the original entry until explicit confirmation. Restaurant suggestions consider the original slot and selected profile; unknown nutrition is retained. See [replacement workflow](REPLACEMENT_WORKFLOW.md) for behavior, tests and limitations. No deployment or merge was performed.

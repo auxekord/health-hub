@@ -54,3 +54,7 @@ A new demo replaces only local generated artifacts. The earlier reviewed `dc46fa
 The earlier source-access blocker is resolved for public sites. The current catalog replaces the empty-menu foundation with five reviewed restaurants, 291 published item names and 41 linked publications. Seventeen items have some directly published nutrition; all other values remain unknown. Source evidence includes retrieval hashes. Dunkin' still denies access and remains a clearly unverified directory entry. See the current RESTAURANT_COVERAGE.md and MENU_SOURCES.md; earlier zero-coverage paragraphs describe the previous foundation build, not this release.
 
 The UI initially offers Higher protein comparisons using sufficiently known standard-item facts. Independent menus can be browsed with unknown nutrition. No broad discovery API, new backend, health-data transfer, paid service or production deployment was introduced. Original storage/security protections, 139 recipes, profile separation, backups and import-disabled separate-origin demo remain.
+
+## Source-aware meal replacement
+
+Plan replacement now asks home versus restaurant first, uses the existing recipe/catalog workflows, and preserves the original entry until explicit confirmation. Restaurant suggestions consider the original slot and selected profile; unknown nutrition is retained. See [replacement workflow](REPLACEMENT_WORKFLOW.md) for behavior, tests and limitations. No deployment or merge was performed.
