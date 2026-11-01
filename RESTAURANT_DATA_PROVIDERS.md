@@ -1,6 +1,6 @@
 # Menu and nutrition provider comparison
 
-This is an integration assessment, not a live provider/price verification. Official websites and documentation were inaccessible under this environment's policy. No exact current price, coverage count, licensing grant or refresh SLA is claimed. All third-party API use remains inactive.
+This is an integration assessment, not a live provider/price verification. Public menu access is now available and the source register records reviewed restaurant publications. Current vendor API pricing/terms were not independently verified. No exact current price, coverage count, licensing grant or refresh SLA is claimed. All third-party API use remains inactive.
 
 | Source | Suitable role | Credentials/cost considerations | Reliability, coverage and restrictions |
 | --- | --- | --- | --- |
@@ -13,3 +13,14 @@ This is an integration assessment, not a live provider/price verification. Offic
 | Manual user entry | Any restaurant when authoritative data is missing | Offline, no credentials or service charge | Label user-entered identity and unknown nutrition. User-declared published values are not independently verified by the app |
 
 The shipped adapter is browser-local and versioned. Searches, profiles, dietary restrictions and meal calculations do not trigger external requests. Explicit map/menu links open a separate site with noopener/noreferrer. Static catalog updates are reviewed code/data changes. Future broader discovery needs separately approved provider terms, costs, privacy review and credential handling.
+
+## Live documentation check — November 1, 2026
+
+Public documentation is now accessible for several providers:
+
+- [USDA FoodData Central API guide](https://fdc.nal.usda.gov/api-guide.html): confirms API-key access, a default 1,000 requests/hour/IP limit and CC0 public-domain data, with attribution requested. This is suitable for explicitly labeled reference-food estimates, not proof of restaurant recipes or portions. No API/key was activated.
+- [Nutritionix developer site](https://developer.nutritionix.com/): explicitly says there is no longer a public free-access tier and directs prospective users to sales for a tailored limited trial. Do not plan this application around an assumed free Nutritionix restaurant API. No account request or contact was sent.
+- [Edamam Nutrition Analysis API](https://developer.edamam.com/edamam-nutrition-api): displays an Enterprise Basic Multilingual plan at $29/month with a 10-day trial, and a Core plan at $299/month without a trial. These are displayed nutrition-analysis plans, not a quote or guaranteed restaurant-menu license/coverage for Health Hub. Nothing was subscribed to or enabled.
+- Spoonacular's candidate pricing page returned HTTP 403; current pricing/rights remain unverified and were not bypassed.
+
+Prices and terms can change. These checks do not imply authorization to use a paid service or transmit household data. The shipped menu snapshots and local recommendation engine require no provider account, API credential or runtime third-party lookup.

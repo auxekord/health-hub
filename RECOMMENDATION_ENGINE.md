@@ -2,7 +2,9 @@
 
 ## Current release boundary
 
-The real verified catalog is empty because source access is blocked. No actual Dunkin', McDonald's or independent restaurant recommendation is shipped. Synthetic regression fixtures validate the engine but are not uploaded in the demo. The interface explains insufficient information and retains manual meal building.
+Five restaurant snapshots contain 291 published menu items. Numeric eligibility is deliberately narrower: seven McDonald's products have selected published facts, ten fixed Chick-fil-A sandwiches have eight known nutrient fields, and independent restaurant nutrients remain unknown. Recommendations use only sufficiently known published facts; no Dunkin' or independent restaurant recommendation is fabricated. See MENU_SOURCES.md and RESTAURANT_COVERAGE.md.
+
+The initial UI priority is Higher protein because calorie/protein pairs can support a useful comparison while sodium, added sugar or other fields may be missing. Other priorities retain their own stricter eligibility checks. When they cannot be supported, the UI explains insufficient data instead of reusing unrelated nutrients.
 
 ## Inputs and provenance
 
@@ -34,4 +36,4 @@ Tradeoffs disclose known/unknown sodium, saturated fat, added sugar and fiber, p
 
 ## Next steps
 
-Verify actual publications and licensing, populate a small reviewed catalog, and have the user assess suggestions against real preferences. Broader meal combinations, medical diets, automatic menu updates and external providers are not activated.
+Continue reviewing additional publications and rights, expand the initial catalog, and have the user assess suggestions against real preferences. Broader meal combinations, medical diets, automatic menu updates and external providers are not activated.

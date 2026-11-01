@@ -1,55 +1,41 @@
-# Restaurant coverage and source-access audit
+# Restaurant coverage — published offline catalog
 
-## Outcome and scope
+Reviewed November 1, 2026. The environment now has unrestricted public-source access. Earlier blanket network denials are resolved; individual sites may still restrict access. No access control or TLS verification was bypassed.
 
-**No current restaurant menu or nutrition publication could be verified in this environment. Actual implemented verified restaurants: 0; verified menu items: 0.** Do not treat the research directory as a sourced menu catalog or live restaurant discovery.
+## Actual implemented coverage
 
-21 candidate HTTPS sites were requested with normal TLS verification and each returned `Tunnel connection failed: 403 Forbidden` from the environment proxy. This is a network-policy denial, not evidence the restaurant or its public menu is unavailable. No access control or TLS verification was bypassed. Two other names require unambiguous identity/source confirmation. No downloaded content was used to infer items, prices, servings or nutrition.
+**23 searchable identities: five reviewed restaurants with 291 published items, plus 18 explicitly unverified research entries.** These are offline snapshots, not live place search, universal coverage or guarantees of local stock. McDonald's coverage spans breakfast, burgers, chicken/fish, nuggets/strips, wraps, sides, desserts, coffee, drinks and sauces. Independent restaurant entries are curated factual subsets rather than a promise that every current menu item is included.
 
-The five requested priority identities are accessible as **unverified research-directory entries**: Dunkin', McDonald's, Fixins Soul Kitchen (user-supplied Detroit location), Sexy Steak (user-supplied Detroit location) and Campestre Chicken (user-supplied Lincoln Park location). Chains do not imply a particular branch or availability. These entries contain no menu items, official nutrition, prices, addresses or purported verification date. Existing local saved restaurants remain separate.
+| Reviewed restaurant | Scope | Published items | Items with some published nutrition |
+| --- | --- | ---: | ---: |
+| McDonald's | US national menu; no individual location promised | 117 | 7 |
+| Fixins Soul Kitchen | Detroit, Michigan | 38 | 0 |
+| Sexy Steak | Detroit, Michigan | 47 | 0 |
+| Chick-fil-A | US national menu; no individual location promised | 29 | 10 |
+| Zukin's Rib Shack | Lincoln Park, Michigan | 60 | 0 |
 
-## Coverage matrix
+17 items contain some published nutrition. Ten Chick-fil-A fixed sandwiches have eight directly published nutrient fields; added sugar remains unknown. Seven McDonald's standard products retain only facts explicitly stated in prose or image alt labels. Two have confirmed calorie/protein pairs. No additional numbers are inferred. Variable-size/choice Chick-fil-A pages are names-only because their displayed default nutrition cannot safely establish the user's size/order.
 
-All source addresses below are **candidate research starting points, not verified official menu sources**. Independent restaurant domain/identity matches are especially unresolved. No restaurant location has been independently verified in this audit.
+Fixins, Sexy Steak and Zukin's have published item names/categories with unknown nutrition. Their menus remain browsable and selectable. No reference estimates are automatically invented, and user-provided Campestre components remain separate from official menu claims.
 
-| Requested restaurant | Candidate starting point | Evidence/result | Implemented menu |
-| --- | --- | --- | --- |
-| McDonald's | https://www.mcdonalds.com/us/en-us/full-menu.html | Environment proxy denied HTTPS tunnel (403) | None |
-| Dunkin' | https://www.dunkindonuts.com/en/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Wendy's | https://www.wendys.com/en-us/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Burger King | https://www.bk.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Taco Bell | https://www.tacobell.com/food | Environment proxy denied HTTPS tunnel (403) | None |
-| Chick-fil-A | https://www.chick-fil-a.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Chipotle | https://www.chipotle.com/nutrition-calculator | Environment proxy denied HTTPS tunnel (403) | None |
-| Subway | https://www.subway.com/en-us/menunutrition | Environment proxy denied HTTPS tunnel (403) | None |
-| Starbucks | https://www.starbucks.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Panera Bread | https://www.panerabread.com/en-us/menu.html | Environment proxy denied HTTPS tunnel (403) | None |
-| Popeyes | https://www.popeyes.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| KFC | https://www.kfc.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Raising Cane's | https://www.raisingcanes.com/menu/ | Environment proxy denied HTTPS tunnel (403) | None |
-| Five Guys | https://www.fiveguys.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Shake Shack | https://shakeshack.com/menu | Environment proxy denied HTTPS tunnel (403) | None |
-| Fixins Soul Kitchen | https://fixinssoulkitchen.com | Environment proxy denied HTTPS tunnel (403) | None |
-| Sexy Steak | https://sexysteak.com | Environment proxy denied HTTPS tunnel (403) | None |
-| Taqueria Mi Pueblo | https://www.mipueblorestaurant.com | Environment proxy denied HTTPS tunnel (403) | None |
-| Mercury Burger & Bar | https://mercuryburgerbar.com | Environment proxy denied HTTPS tunnel (403) | None |
-| Campestre Chicken | https://campestrechicken.com | Environment proxy denied HTTPS tunnel (403) | None |
-| Pita To Go | Not identified | Identity/source needs clarification | None |
-| Taqueria Los Charros | Not identified | Identity/source needs clarification | None |
-| Zukin's Rib Shack | https://zukinsribshack.com | Environment proxy denied HTTPS tunnel (403) | None |
+## Source identity corrections and restrictions
 
-## Verified source list
+- McDonald's national menu and selected public product pages returned HTTP 200.
+- Fixins official homepage links a Detroit Main Menu PDF, which confirms Detroit identity and named items.
+- Sexy Steak's usable official site is `https://www.sexysteakdetroit.com/menu`. The initially guessed `sexysteak.com` address returned a redirect-only landing page and is excluded from the catalog.
+- Chick-fil-A official menu/category/product pages returned HTTP 200. Only clearly fixed sandwich servings receive numeric values; variable/default choice tables are not copied into meal nutrition.
+- Zukin's official menu identifies Lincoln Park, Michigan. Prices, hours and marketing descriptions are not reproduced.
+- Dunkin's menu and nutrition PDF still return site-level HTTP 403. It remains unverified with no fabricated menu. Raising Cane's, Five Guys and Taco Bell candidate pages also denied the requests; no bypass attempted.
+- Wendy's candidate menu paths returned 404; Panera's shell loaded but structured items were not verified; Mercury returned 406; Mi Pueblo returned 403. These are research limitations, not proof menus are unavailable to customers.
 
-Empty. `app/catalog-data.js` has no source publications and no menu items. Candidate URLs above are not seeded as official website/menu links. The existing user-entered links remain labeled as user-provided.
+## Remaining research directory
 
-## Safe completion sequence
+Dunkin', Campestre Chicken, Wendy's, Burger King, Taco Bell, Chipotle, Subway, Starbucks, Panera Bread, Popeyes, KFC, Raising Cane's, Five Guys, Shake Shack, Taqueria Mi Pueblo, Mercury Burger & Bar, Pita To Go, Taqueria Los Charros.
 
-1. Enable required official domains in environment network settings or supply actual official menu/nutrition documents. Confirm identity/location, publisher and document date before entry. Do not send personal household records.
-2. Check permission to reproduce factual selections, attribution, region/location applicability, supported serving sizes, actual allergens and published nutrient basis. Do not copy restricted menu databases or entire copyrighted publications blindly.
-3. Add a small reviewed menu to the versioned data module with restaurant identity source, menu source, separate nutrition/dietary sources where applicable, review date, evidence description and permission/attribution notes. Source updates require review; they are not a runtime fetch.
-4. Prioritize Dunkin' and McDonald's breakfast/main/beverage examples only after documents support them, then independent restaurant entries with unknown nutrition where no publication exists. Preserve the user-provided Campestre plate separately from official menu claims.
-5. Re-run all tests, privacy checks and preview screenshots. Current brand screenshots deliberately show unavailable/unverified menus rather than fabricated food cards.
+Directory names and local city queries come from the user's requested coverage. They are not live results or independently verified locations. Pita To Go and Taqueria Los Charros still require unambiguous identity/location confirmation. Other unresearched chains are not assigned invented source URLs.
 
-## What was implemented despite the blocker
+## Expansion and maintenance
 
-Searchable offline directory, reviewed-catalog schema/provider boundary, source/freshness gates, menu category cards, local explainable comparisons, profile-specific dietary preferences, standard-serving order quantities, custom components, substitutions with unknown nutrition, order comparisons and confirmation through the existing plan/journal editor. Synthetic menu fixtures exercise these paths only in tests; they are not application or preview data.
+Keep adding small source-reviewed menus across chains and Detroit/Downriver, then South Florida. Do not require screenshots: public HTML/PDF sources can be reviewed directly where allowed. Record exact URL, publisher, serving basis, source hash and review date. Check factual selections and permissions; do not copy restricted databases, images or full menu prose. A 90-day editorial freshness gate prevents old snapshots being recommended as current; it does not prove availability has not changed. No runtime third-party discovery API or paid service is enabled.
+
+See MENU_SOURCES.md for all 41 reviewed publications and RECOMMENDATION_ENGINE.md for suggestion eligibility and missing-data handling.

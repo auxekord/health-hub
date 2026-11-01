@@ -26,7 +26,7 @@ store=files['app/data-safety.js'];a=store.index('  const defaults =');b=store.in
 files['app/data-safety.js']=store[:a]+'  const defaults=()=>window.HealthHubDemo.initialState();\n'+store[b:]
 for name in files:files[name]=files[name].replace('healthhub-v5',KEY)
 manifest=json.loads(files['manifest.webmanifest']);manifest.update(name='Health Hub — Demo Preview',short_name='HH Demo',id='./demo-preview');files['manifest.webmanifest']=json.dumps(manifest,indent=2)+'\n'
-worker=files['sw.js'].replace("'health-hub-'","'health-hub-demo-'").replace("'health-hub-phase2-catalog-1'","'health-hub-demo-catalog-1'")
+worker=files['sw.js'].replace("'health-hub-'","'health-hub-demo-'").replace("'health-hub-phase2-catalog-2'","'health-hub-demo-catalog-2'")
 a=worker.index('const SHELL =');b=worker.index(';',a)
 shell=['./']+['./'+p for p in paths if p not in ['sw.js','_headers','robots.txt']]
 files['sw.js']=worker[:a]+'const SHELL = '+json.dumps(shell)+worker[b:]

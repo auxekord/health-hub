@@ -147,3 +147,19 @@ test('changing published serving basis clears inherited numbers and manual nutri
 test('a reviewed menu without published nutrition remains browsable but cannot generate recommendations',async({page})=>{
   const data=fixture();data.restaurants[0].items.forEach(i=>{for(const k in i.nutrients)i.nutrients[k]=null;i.nutritionSourceId=null;});await mock(page,data);await open(page);await expect(ui(page).locator('.catalog-menu-item')).toHaveCount(3);await expect(ui(page).locator('[data-catalog=suggestion]')).toHaveCount(0);await expect(ui(page).locator('[data-catalog=recommendations]')).toContainText('Insufficient');
 });
+test('reviewed public catalog has five sourced restaurants and keeps unresolved identities separate',async({page})=>{
+  const result=await evaluate(page,()=>{
+    const all=HHRestaurantCatalogData.restaurants;
+    return {verified:all.filter(r=>r.status==='verified').map(r=>[r.name,r.items.length]),count:all.reduce((a,r)=>a+r.items.length,0),unverifiedEmpty:all.filter(r=>r.status==='unverified').every(r=>!r.items.length),sources:HHRestaurantCatalogData.sources.every(s=>s.evidence.includes('SHA-256:'))};
+  });
+  expect(result.verified).toEqual([["McDonald's",117],['Fixins Soul Kitchen',38],['Sexy Steak',47],['Chick-fil-A',29],["Zukin's Rib Shack",60]]);expect(result.count).toBe(291);expect(result.unverifiedEmpty).toBe(true);expect(result.sources).toBe(true);
+});
+test('real published standard-item facts support comparisons without inventing independent-restaurant nutrition',async({page})=>{
+  const result=await evaluate(page,()=>{
+    const c=HHCatalog.catalog,p={calories:2000,protein:100},m=c.search("McDonald's")[0],f=c.search('Fixins')[0],ch=c.search('Chick-fil-A')[0];
+    return {mc:c.recommend(m,p,'protein').meals.map(x=>x.items.map(i=>i.name)),fix:c.recommend(f,p,'protein').meals.length,cfa:c.recommend(ch,p,'protein').meals.length,added:c.recommend(ch,p,'addedSugar').meals.length,egg:m.items.find(i=>i.id==='mcd-egg-mcmuffin').nutrients,fixUnknown:f.items.every(i=>Object.values(i.nutrients).every(x=>x===null))};
+  });expect(result.mc.flat().some(n=>n.includes('McDouble'))).toBe(true);expect(result.fix).toBe(0);expect(result.cfa).toBeGreaterThan(0);expect(result.added).toBe(0);expect(result.egg).toMatchObject({kcal:310,protein:17,sodium:null});expect(result.fixUnknown).toBe(true);
+});
+test('actual menu browsing and order confirmation retain provenance and unknown values',async({page})=>{
+  await open(page,'Sexy Steak');await ui(page).locator('[data-catalog=category]').selectOption('Il Macellaio');await ui(page).getByRole('button',{name:'Add Filet Mignon',exact:true}).click();await expect(ui(page).locator('[data-catalog=totals]')).toContainText('Calories: unknown');await ui(page).getByRole('button',{name:'Review order before logging'}).click();await page.locator('#save-meal').click();const c=(await state(page)).phase2.journal[0].components[0];expect(c.catalog.sourceUrl).toBe('https://www.sexysteakdetroit.com/menu');expect(c.nutrients.kcal).toBeNull();expect(c.status).toBe('unknown');
+});

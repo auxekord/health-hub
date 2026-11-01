@@ -76,6 +76,6 @@ or merge is authorized by development/test commands.
 
 See [integration report](PHASE2_INTEGRATION_REPORT.md), [restaurant implementation](RESTAURANT_IMPLEMENTATION.md), [test results](TEST_RESULTS.md), and [sanitized preview instructions](PREVIEW_BUILD.md). The existing Phase 2 draft PR includes production security and pending food-search repair changes; no deployment is authorized.
 
-## Restaurant menus and recommendations: source access pending
+## Published offline restaurant menus
 
-The menu/order and local recommendation foundation is implemented, but the shipped verified menu catalog is empty: official sources were blocked by the development environment. Five requested restaurant names are labeled as an unverified offline research directory. See [coverage](RESTAURANT_COVERAGE.md), [source register](MENU_SOURCES.md), [provider comparison](RESTAURANT_DATA_PROVIDERS.md) and [recommendation rules](RECOMMENDATION_ENGINE.md). Synthetic test menu data is never bundled in the preview.
+Five reviewed restaurant snapshots contain 291 selectable items: McDonald's, Fixins Detroit, Sexy Steak, Chick-fil-A and Zukin's Rib Shack. Seventeen items have some published nutrition; missing values remain unknown. Eighteen other requested names remain explicitly unverified research entries, including Dunkin' where source access was denied. See [coverage](RESTAURANT_COVERAGE.md), [source register](MENU_SOURCES.md), [provider comparison](RESTAURANT_DATA_PROVIDERS.md), and [recommendation rules](RECOMMENDATION_ENGINE.md). Public source review does not mean live availability or complete restaurant coverage.

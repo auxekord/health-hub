@@ -2,18 +2,18 @@
 
 ## Final automated runs
 
-- `npm test -- --reporter=line --output=/tmp/hh-catalog-acceptance-results`: **138 passed**, 1.7 minutes. 100 preserved application/security/food-search/Phase 2 cases plus 38 menu/catalog cases, across desktop and mobile Chromium projects.
-- `npm run test:preview -- --reporter=line --output=/tmp/hh-catalog-preview-final-results`: **27 passed**, 1.0 minute. Existing 21 preview cases plus six directory/custom-order cases across desktop, mobile and emulated tablet.
-- `npm run build:preview`: **12 build privacy/integrity checks passed**, including unchanged original 139-recipe JSON, no working import reader, no production namespace/hostname, no known original medical wording/default demographics, no common credential patterns, no test menu fixtures and no menu items in unverified directory entries.
-- JavaScript syntax checks, original inline CSS/CSP directive comparison, ZIP hash/allowlist verification and `git diff --check` completed.
+- `npm test -- --reporter=line --output=/tmp/hh-published-acceptance-results`: **144 passed**, 1.8 minutes, desktop/mobile Chromium. Preserves 100 prior production/security/Phase 2 cases and 38 catalog-foundation cases, plus six published-source/catalog workflows.
+- `npm run test:preview -- --reporter=line --output=/tmp/hh-published-preview-acceptance-results`: **27 passed**, 52.3 seconds, desktop/mobile/emulated tablet.
+- `npm run build:preview`: **12 privacy/integrity checks passed**, 139 original recipe definitions unchanged. The unverified-directory entries still contain no menu items; actual reviewed menu data is separately attributed.
+- JavaScript syntax, original inline CSS/CSP directive preservation, ZIP allowlist/hash and `git diff --check` verified.
 
-Browser: Chromium 154.0.8037.57 on Debian Linux. Runtime: Node 24.19.0. Playwright desktop/mobile and 800×1280 tablet emulation are not physical Android testing.
+Browser: Chromium on Debian Linux, with Playwright desktop/mobile and 800×1280 tablet emulation. Physical Android was not tested. Source access uses TLS-validating Python HTTPS; headless external navigation encountered a certificate-trust error and was not bypassed. This does not affect internal browser tests.
 
 ## Menu/catalog regression coverage
 
 19 scenarios run on both application projects: directory vs live-search labeling; apostrophe/location matching; source/ID/URL validation; historical menu freshness; nutrient-specific priorities and goal explanations; allergens, may-contain and restrictions; standard portions vs substitutions; source cards/categories; partial unknown totals; profile preferences and favorite provenance; plan/consumption/grocery/duplicate protection; modified item names; invalid-state recovery; inert malicious text/no external health-data requests; offline custom entry/tablet width; malformed-catalog fallback; legacy fields/preferences through goal edits; serving-basis/manual nutrient changes; and browsable sourced menu items with unknown nutrition.
 
-Actual source-verified menu coverage is **zero**, not 38 menu items. Synthetic test fixtures represent a fictional test kitchen and are excluded from runtime/demo assets. Tests demonstrate code behavior, not real menu accuracy, live provider availability or official source access.
+Actual published coverage is **five restaurants and 291 menu items**; 17 have some published nutrition. Six added test executions verify the real catalog counts, provenance/nutrition gates and a Sexy Steak unknown-nutrition order. Synthetic test fixtures represent a fictional test kitchen and are excluded from runtime/demo assets. Tests demonstrate code behavior, not real menu accuracy, live provider availability or official source access.
 
 ## Failures found and fixed during validation
 
@@ -25,8 +25,12 @@ The passing final runs above followed these fixes. No tests were skipped, disabl
 
 The allowlisted 19-file build excludes Git history, backups, tests/fixtures, screenshots, reports, dependency directories and development-only files. All generated import readers are absent, legacy callbacks reject without reading, import inputs remain disabled after rendering, and demo storage is separate from production. Source-path inspection supplements automated scans; scanning alone cannot guarantee that every possible sensitive string is absent.
 
-`node scripts/capture-demo.cjs` captured 14 fresh fictional-context screenshots, with no page errors or page-width overflow. Original eight workflows and a phone screen are retained; four brand profiles deliberately show unavailable/unverified menus, and a custom order shows unknown nutrition. See `artifacts/SCREENSHOTS.md`. Images were inspected for content/layout; no real browser records were used. Menu screenshots are not evidence of verified menu browsing.
+`node scripts/capture-demo.cjs` captured fresh fictional-household screenshots, with no page errors or page-width overflow. Original eight workflows and a phone screen are retained; the earlier foundation brand profiles deliberately showed unavailable/unverified menus, and a custom order shows unknown nutrition. See `artifacts/SCREENSHOTS.md`. Images were inspected for content/layout; no real browser records were used. Screenshots show the interface; source verification is backed by the publication register and hashes, not screenshots alone.
 
-## Remaining verification
+## Public-source and visual review follow-up
 
-21 candidate source sites were blocked by the environment proxy; two requested identities need source clarification. Official menu/nutrition research, reproduction permissions and actual branded recommendations remain incomplete. Current provider prices/terms were not independently verified. No real-device, hosted Cloudflare or live Open Food Facts success is claimed. Production, existing hosted preview and Cloudflare settings were not changed.
+41 public publications were retrieved and their hashes recorded. McDonald's national menu, Fixins Detroit PDF, Sexy Steak's confirmed Detroit website, Chick-fil-A menu/product pages and Zukin's Lincoln Park menu are accessible. Item names/categories and selected numeric facts were checked against the returned publications; no prices/images/full promotional prose are copied. Allergen completeness remains conservative and unsupported variants retain unknown nutrition. Live source access is evidence of retrieval, not guaranteed future availability or official API integration.
+
+15 screenshots use fictional household records, with real public menu facts where available. Three updated brand screens show actual menu cards; Dunkin' shows missing verification; the new recommendation screen uses published Chick-fil-A data. No personal health records were used. The gallery is `artifacts/SCREENSHOTS.md`.
+
+Dunkin' and several other sites still restrict requests. Eighteen identities remain explicitly unverified. Full comprehensive restaurant coverage, real-device ergonomics/installability and hosted preview behavior remain unverified. No Cloudflare deployment, production change or PR merge was performed.

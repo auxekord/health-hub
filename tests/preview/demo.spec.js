@@ -285,19 +285,24 @@ test("separate browser origins preserve a synthetic production-storage canary th
   ).toBeNull();
   await canary.close();
 });
-test('requested restaurant profiles disclose missing verified menus without fabricating food cards',async({page})=>{
+test('restaurant profiles distinguish published menus from unresolved directory entries',async({page})=>{
   await page.goto('./');await nav(page,'journal');
   for (const name of ["Dunkin'","McDonald's",'Fixins Soul Kitchen','Sexy Steak','Campestre Chicken']) {
     await page.locator('#journal-connected [data-p=restaurant]').click();
     await page.locator('#restaurant-search-form [name=name]').fill(name);
     await page.locator('#restaurant-browser').getByRole('button',{name:'Search saved restaurants',exact:true}).click();
     await page.locator('#restaurant-browser').getByRole('button',{name:'Explore '+name,exact:true}).click();
-    await expect(page.locator('#restaurant-catalog')).toContainText('No source-verified menu');
-    await expect(page.locator('#restaurant-catalog .catalog-menu-item')).toHaveCount(0);
-    await expect(page.locator('#restaurant-catalog [data-catalog=suggestion]')).toHaveCount(0);
+    if (["Dunkin'",'Campestre Chicken'].includes(name)) {
+      await expect(page.locator('#restaurant-catalog')).toContainText('No source-verified menu');
+      await expect(page.locator('#restaurant-catalog .catalog-menu-item')).toHaveCount(0);
+      await expect(page.locator('#restaurant-catalog [data-catalog=suggestion]')).toHaveCount(0);
+    } else {
+      expect(await page.locator('#restaurant-catalog .catalog-menu-item').count()).toBeGreaterThan(20);
+      await expect(page.locator('#restaurant-catalog')).toContainText('Reviewed catalog');
+    }
     await page.locator('#restaurant-browser').getByRole('button',{name:'Close',exact:true}).click();
   }
-  expect(await page.evaluate(()=>HHRestaurantCatalogData.sources.length)).toBe(0);
+  expect(await page.evaluate(()=>HHRestaurantCatalogData.sources.length)).toBeGreaterThan(30);
 });
 test('manual unknown custom orders remain local and profile-specific in the demo',async({page})=>{
   await page.goto('./');await nav(page,'journal');await page.locator('#journal-connected [data-p=restaurant]').click();await page.locator('#restaurant-browser').getByRole('button',{name:"Explore Dunkin'",exact:true}).click();

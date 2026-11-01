@@ -318,3 +318,5 @@ button {
 .catalog-order-item {margin:10px 0;}
 .catalog-panel select,.catalog-panel input {max-width:100%;}
 .catalog-preferences {margin:1rem 0;}
+
+.catalog-menu-item small {display:block;}

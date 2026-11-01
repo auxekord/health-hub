@@ -30,6 +30,7 @@
     profile.value = context.activeProfile || 'you';
     const priority = field(controls, 'Recommendation priority', 'select', { 'data-catalog': 'priority' });
     for (const [k, v] of Object.entries(C.PRIORITIES)) priority.append(el('option', v, { value: k }));
+    priority.value = 'protein';
     const share = field(controls, 'Daily-goal share for this meal (%)', 'input', { 'data-catalog': 'share', type: 'number', min: '10', max: '100', step: '1', value: '30' });
     const recs = el('div', null, { 'data-catalog': 'recommendations', 'aria-live': 'polite' });
     const preferenceBox = el('details', null, { class: 'catalog-preferences' }); preferenceBox.append(el('summary', 'Dietary preferences and optional limits (stored privately on this device)'));
