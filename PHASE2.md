@@ -132,3 +132,7 @@ locally. Real Android/iOS devices and live food APIs were not verified.
 - Any backend, health-data transfer, restaurant API integration, deployment or
   feature removal requires separate approval. This branch must be reviewed
   before merging. No merge or production deployment is part of this work.
+
+## Integration update
+
+This earlier implementation record is superseded by PHASE2_INTEGRATION_REPORT.md for current storage/security behavior and RESTAURANT_IMPLEMENTATION.md for hybrid discovery.

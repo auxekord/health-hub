@@ -37,6 +37,11 @@
       (c.quantity === null || num(c.quantity)) &&
       UNITS.includes(c.unit) &&
       text(c.source) &&
+      (c.preparation === undefined || text(c.preparation)) &&
+      (c.nutritionBasis === undefined ||
+        (num(c.nutritionBasis) && c.nutritionBasis > 0)) &&
+      (c.consumedFraction === undefined ||
+        (num(c.consumedFraction) && c.consumedFraction <= 1)) &&
       ["unknown", "estimate", "verified"].includes(c.status) &&
       object(c.nutrients) &&
       NUTRIENTS.every((k) => c.nutrients[k] === null || num(c.nutrients[k])) &&
@@ -62,9 +67,14 @@
       CATEGORIES.includes(m.category) &&
       SOURCES.includes(m.kind) &&
       text(m.restaurant) &&
+      (m.restaurantId === undefined ||
+        m.restaurantId === null ||
+        stable(m.restaurantId)) &&
       text(m.location) &&
       text(m.notes) &&
       text(m.leftovers) &&
+      (m.includeGroceries === undefined ||
+        typeof m.includeGroceries === "boolean") &&
       Array.isArray(m.components) &&
       m.components.length > 0 &&
       m.components.length <= 200 &&
@@ -79,6 +89,45 @@
             (k) => num(m.portions[k]) && m.portions[k] <= 20,
           ) &&
           m.portions.you + m.portions.wife > 0)
+    );
+  }
+  function safeURL(value) {
+    if (value === "") return "";
+    try {
+      const u = new URL(value);
+      if (
+        u.protocol !== "https:" ||
+        u.username ||
+        u.password ||
+        u.origin === location.origin ||
+        u.hostname === "localhost" ||
+        u.hostname.endsWith(".local") ||
+        (u.port && u.port !== "443")
+      )
+        return null;
+      return u.href;
+    } catch {
+      return null;
+    }
+  }
+  function restaurant(r) {
+    return (
+      object(r) &&
+      text(r.name) &&
+      r.name.trim() &&
+      text(r.location) &&
+      (r.id === undefined || stable(r.id)) &&
+      ["website", "menuUrl"].every(
+        (k) => r[k] === undefined || (text(r[k]) && safeURL(r[k]) !== null),
+      ) &&
+      [
+        "provider",
+        "placeId",
+        "address",
+        "source",
+        "lastChecked",
+        "updatedAt",
+      ].every((k) => r[k] === undefined || r[k] === null || text(r[k]))
     );
   }
   function valid(s) {
@@ -110,17 +159,16 @@
         (k) =>
           object(s.profiles[k]) &&
           text(s.profiles[k].name) &&
-          num(s.profiles[k].calories) &&
-          s.profiles[k].calories > 0 &&
-          num(s.profiles[k].protein) &&
-          num(s.profiles[k].goalWeight),
+          (s.profiles[k].calories === null || num(s.profiles[k].calories)) &&
+          (s.profiles[k].protein === null || num(s.profiles[k].protein)) &&
+          (s.profiles[k].goalWeight === null || num(s.profiles[k].goalWeight)),
       ) &&
       object(s.shopping) &&
       Array.isArray(s.shopping.manual) &&
       s.shopping.manual.every(
         (x) =>
           object(x) &&
-          text(x.id) &&
+          stable(x.id) &&
           text(x.name) &&
           num(x.quantity) &&
           UNITS.includes(x.unit) &&
@@ -138,7 +186,9 @@
           (x.quantity === null || num(x.quantity)),
       ) &&
       Array.isArray(s.restaurants) &&
-      s.restaurants.every((x) => object(x) && text(x.name) && text(x.location))
+      s.restaurants.every(restaurant) &&
+      new Set(s.restaurants.filter((r) => r.id !== undefined).map((r) => r.id))
+        .size === s.restaurants.filter((r) => r.id !== undefined).length
     );
   }
   function create(legacy) {
@@ -152,16 +202,16 @@
       shopping: { manual: [], overrides: {} },
       profiles: {
         you: {
-          name: "You",
-          calories: legacy.calorieTarget || 1900,
-          protein: legacy.proteinTarget || 130,
-          goalWeight: legacy.goalWeight || 200,
+          name: legacy.profileName || "Profile 1",
+          calories: legacy.calorieTarget ?? null,
+          protein: legacy.proteinTarget ?? null,
+          goalWeight: legacy.goalWeight ?? null,
         },
         wife: {
-          name: "Wife",
-          calories: legacy.wifeProfile?.calorieTarget || 1500,
-          protein: legacy.wifeProfile?.proteinTarget || 85,
-          goalWeight: 0,
+          name: legacy.wifeProfile?.name || "Profile 2",
+          calories: legacy.wifeProfile?.calorieTarget ?? null,
+          protein: legacy.wifeProfile?.proteinTarget ?? null,
+          goalWeight: legacy.wifeProfile?.goalWeight ?? null,
         },
       },
     };
@@ -184,7 +234,7 @@
       date: day,
       time: "12:00",
       category: "Lunch",
-      kind: "Custom",
+      kind: "Home-cooked",
       restaurant: "",
       location: "",
       notes: "",
@@ -233,13 +283,24 @@
         known = false,
         partial = false;
       for (const c of m.components) {
-        const q = m.profile ? c.quantity : quantity(c, m, profile);
+        const base = m.profile ? c.quantity : quantity(c, m, profile);
+        const q =
+          c.consumedFraction === 0
+            ? 0
+            : base === null
+              ? null
+              : base * (c.consumedFraction ?? 1);
         if (q === 0) continue;
         if (q === null || c.nutrients[k] === null) {
           partial = true;
           continue;
         }
-        sum += q * c.nutrients[k];
+        const basis = c.nutritionBasis ?? 1;
+        if (!Number.isFinite(basis) || basis <= 0) {
+          partial = true;
+          continue;
+        }
+        sum += (q * c.nutrients[k]) / basis;
         known = true;
         if (c.status !== "verified") result.estimated = true;
       }
@@ -275,7 +336,11 @@
   function groceries(plans) {
     const map = new Map();
     for (const m of plans) {
-      if (m.kind === "Restaurant") continue;
+      if (
+        m.kind === "Restaurant" ||
+        (m.kind !== "Home-cooked" && m.includeGroceries !== true)
+      )
+        continue;
       for (const c of m.components) {
         const name = c.name.trim().toLowerCase().replace(/\s+/g, " ");
         const conv = conversion[c.unit];
@@ -313,7 +378,46 @@
     delete m.portions;
     return m;
   }
+  function merge(current, incoming) {
+    const result = clone(current);
+    for (const key of ["plans", "journal", "favorites", "weights"]) {
+      const ids = new Set((result[key] || []).map((x) => x.id));
+      result[key] ??= [];
+      for (const item of incoming[key] || [])
+        if (!ids.has(item.id)) {
+          result[key].push(clone(item));
+          ids.add(item.id);
+        }
+    }
+    const names = new Set(
+      result.restaurants.map(
+        (x) => x.name.toLowerCase() + "|" + x.location.toLowerCase(),
+      ),
+    );
+    for (const r of incoming.restaurants) {
+      const key = r.name.toLowerCase() + "|" + r.location.toLowerCase();
+      if (!names.has(key)) {
+        result.restaurants.push(clone(r));
+        names.add(key);
+      }
+    }
+    const ids = new Set(result.shopping.manual.map((x) => x.id));
+    for (const x of incoming.shopping.manual)
+      if (!ids.has(x.id)) {
+        result.shopping.manual.push(clone(x));
+        ids.add(x.id);
+      }
+    result.shopping.overrides = {
+      ...incoming.shopping.overrides,
+      ...result.shopping.overrides,
+    };
+    if (!valid(result)) throw Error("Invalid merged meal data");
+    return result;
+  }
   root.HHModel = {
+    merge,
+    safeURL,
+    restaurant,
     CATEGORIES,
     SOURCES,
     NUTRIENTS,

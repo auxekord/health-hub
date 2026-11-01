@@ -24,7 +24,7 @@
     undo = null;
   const get = () => H.state.phase2;
   if (!H.state.phase2) H.state.phase2 = M.create(H.state);
-  const fmt = (n) => (n === null ? "Unknown" : Math.round(n * 10) / 10);
+  const fmt = (n) => (n == null ? "Unknown" : Math.round(n * 10) / 10);
   const options = (values, selected) =>
     values
       .map(
@@ -39,27 +39,32 @@
       esc(message) + (withUndo ? " " + btn("undo", "Undo") : "");
   }
   function commit(change, message, allowUndo = false) {
-    if (storageChanged) {
-      notice("Data changed in another tab. Refresh before saving.");
+    if (H.store.reason()) {
+      notice(
+        "Saving is paused. Download recovery data or recheck saved data first.",
+      );
       return false;
     }
     const before = M.clone(H.state);
     try {
       change();
-      if (!M.valid(get())) throw Error("Invalid meal data. Check the fields.");
-      localStorage.setItem("healthhub-v5", JSON.stringify(H.state));
+      if (!M.valid(get())) throw Error("Invalid meal data");
+      if (!H.store.write(H.state)) {
+        H.setState(H.store.state());
+        H.render();
+        notice(
+          "Could not save. Existing data is preserved; review the recovery notice.",
+        );
+        return false;
+      }
+      H.setState(H.store.state());
       undo = allowUndo ? before : null;
       H.render();
       notice(message, allowUndo);
       return true;
-    } catch (e) {
-      Object.keys(H.state).forEach((k) => delete H.state[k]);
-      Object.assign(H.state, before);
-      notice(
-        e.message === "Invalid meal data. Check the fields."
-          ? e.message
-          : "Could not save. Browser storage may be full or unavailable. Export a backup.",
-      );
+    } catch {
+      H.setState(before);
+      notice("Invalid meal data. Check quantities, sources and links.");
       return false;
     }
   }
@@ -126,8 +131,9 @@
     }
   }
   function nutrition(s, profile, planned = false) {
-    const p = get().profiles[profile];
-    return `<div><span class="eyebrow">${esc(p.name)} · ${planned ? "PLANNED" : "ACTUAL"}</span><b>${fmt(s.kcal)} / ${fmt(p.calories)} kcal</b><small>${fmt(s.protein)} / ${fmt(p.protein)} g protein</small><progress aria-label="${esc(p.name)} ${planned ? "planned" : "actual"} calories" max="${p.calories}" value="${s.kcal}"></progress><progress aria-label="${esc(p.name)} ${planned ? "planned" : "actual"} protein" max="${p.protein || 1}" value="${s.protein}"></progress><small>${s.partial ? "Partial: quantities or nutrients missing. " : ""}${s.estimated ? "Includes estimates. " : ""}${s.count ? "" : "No meals recorded. "}${planned ? "Planning does not count as eaten." : ""}</small></div>`;
+    const p = get().profiles[profile],
+      target = (n) => (n == null ? "Not set" : fmt(n));
+    return `<div><span class="eyebrow">${esc(p.name)} · ${planned ? "PLANNED" : "ACTUAL"}</span><b>${fmt(s.kcal)} / ${target(p.calories)} kcal</b><small>${fmt(s.protein)} / ${target(p.protein)} g protein</small>${p.calories > 0 ? `<progress aria-label="${esc(p.name)} ${planned ? "planned" : "actual"} calories" max="${p.calories}" value="${s.kcal}"></progress>` : ""}${p.protein > 0 ? `<progress aria-label="${esc(p.name)} ${planned ? "planned" : "actual"} protein" max="${p.protein}" value="${s.protein}"></progress>` : ""}<small>${s.partial ? "Partial: quantities or nutrients missing. " : ""}${s.estimated ? "Includes estimates. " : ""}${s.count ? "" : "No meals recorded. "}${planned ? "Planning does not count as eaten." : ""}</small></div>`;
   }
   function mealSummary(m, profile) {
     const t = M.total(m, profile);
@@ -167,13 +173,13 @@
         ),
         activeProfile,
         true,
-      )}</div><div class="actionbar">${btn("quick-log", "Quick log a meal")}${btn("today-plan", "Plan today")}</div><p class="phase-muted">${logs.length ? (s.partial ? "Some nutrition is unknown. Review the meal components to improve your totals." : s.protein < get().profiles[activeProfile].protein ? "Protein is below your daily target so far. Log what actually happened." : "Your logged protein has reached today’s target.") : "Plan changed? Log what actually happened. No meals are counted as eaten until you save a journal entry."}</p><div class="split"><div class="panel"><h2>Planned for today · next meal first</h2>${plans.length ? plans.map(planCard).join("") : '<p class="empty">Your next meal starts here. Add a meal in Plan.</p>'}</div><div class="panel"><h2>Actually eaten today</h2>${logs.length ? logs.map((m) => `<div class="entry"><strong>${esc(m.name)}</strong><small>${mealSummary(m, activeProfile)}</small>${btn("edit-journal", "Correct entry", m.id)}</div>`).join("") : '<p class="empty">Nothing logged for this profile yet.</p>'}</div></div>`;
+      )}</div><div class="actionbar">${btn("quick-log", "Quick log a meal")}${btn("today-plan", "Plan today")}</div><p class="phase-muted">${logs.length ? (s.partial ? "Some nutrition is unknown. Review the meal components to improve your totals." : get().profiles[activeProfile].protein === null ? "No protein target set. Configure optional goals in Plan." : s.protein < get().profiles[activeProfile].protein ? "Protein is below your daily target so far. Log what actually happened." : "Your logged protein has reached today’s target.") : "Plan changed? Log what actually happened. No meals are counted as eaten until you save a journal entry."}</p><div class="split"><div class="panel"><h2>Planned for today · next meal first</h2>${plans.length ? plans.map(planCard).join("") : '<p class="empty">Your next meal starts here. Add a meal in Plan.</p>'}</div><div class="panel"><h2>Actually eaten today</h2>${logs.length ? logs.map((m) => `<div class="entry"><strong>${esc(m.name)}</strong><small>${mealSummary(m, activeProfile)}</small>${btn("edit-journal", "Correct entry", m.id)}</div>`).join("") : '<p class="empty">Nothing logged for this profile yet.</p>'}</div></div>`;
   }
   function renderPlan() {
     const days = Array.from({ length: 7 }, (_, i) => shift(week, i)),
       plans = get().plans.filter((m) => days.includes(m.date));
     $("week-connected").innerHTML =
-      `<p class="eyebrow">YOUR WEEK IS TAKING SHAPE</p><h1 class="headline">Plan your<br><span class="lime">rotation.</span></h1><div class="row">${btn("previous-week", "← Previous week")}<h2 id="week-title">${week} – ${days[6]}</h2>${btn("next-week", "Next week →")}</div><div class="actionbar">${btn("current-week", "This week")}${btn("reuse-week", "Reuse previous week")}${btn("add-plan", "Add planned meal", "", `data-date="${week}"`)}<a class="btn ghost" href="#shopping-list">Groceries for this week</a></div><div class="phase-summary">${[
+      `<p class="eyebrow">YOUR WEEK IS TAKING SHAPE</p><h1 class="headline">Plan your<br><span class="lime">rotation.</span></h1><div class="row">${btn("previous-week", "← Previous week")}<h2 id="week-title">${week} – ${days[6]}</h2>${btn("next-week", "Next week →")}</div><div class="actionbar">${btn("current-week", "This week")}${btn("reuse-week", "Reuse previous week")}${btn("browse-plan-restaurants", "Find restaurants")}${btn("add-plan", "Add planned meal", "", `data-date="${week}"`)}<a class="btn ghost" href="#shopping-list">Groceries for this week</a></div><div class="phase-summary">${[
         "you",
         "wife",
       ]
@@ -182,7 +188,7 @@
             plans.filter((m) => m.portions[k] > 0),
             k,
           );
-          return `<div><span class="eyebrow">${esc(get().profiles[k].name)} · WEEK PLAN</span><b>${fmt(s.kcal)} / ${get().profiles[k].calories * 7} kcal</b><small>${fmt(s.protein)} / ${get().profiles[k].protein * 7} g protein · ${s.partial ? "Partial nutrition" : "Recorded nutrition"}${s.estimated ? " · estimates" : ""}</small></div>`;
+          return `<div><span class="eyebrow">${esc(get().profiles[k].name)} · WEEK PLAN</span><b>${fmt(s.kcal)} / ${get().profiles[k].calories === null ? "Not set" : fmt(get().profiles[k].calories * 7)} kcal</b><small>${fmt(s.protein)} / ${get().profiles[k].protein === null ? "Not set" : fmt(get().profiles[k].protein * 7)} g protein · ${s.partial ? "Partial nutrition" : "Recorded nutrition"}${s.estimated ? " · estimates" : ""}</small></div>`;
         })
         .join("")}</div><div class="week-grid">${days
         .map(
@@ -207,7 +213,7 @@
         )
         .join(
           "",
-        )}</div>${shopping(plans)}<details class="phase-advanced"><summary>Household goals</summary><form id="profile-form" class="phase-fields">${["you", "wife"].map((k) => `<fieldset><legend>${esc(get().profiles[k].name)}</legend><label>Name<input name="${k}-name" value="${esc(get().profiles[k].name)}" required maxlength="80"></label><label>Daily calorie target<input name="${k}-calories" type="number" min="1" max="10000" value="${get().profiles[k].calories}" required></label><label>Daily protein target (g)<input name="${k}-protein" type="number" min="0" max="1000" value="${get().profiles[k].protein}" required></label><label>Goal weight (lb, 0 = no target)<input name="${k}-goalWeight" type="number" min="0" max="1000" step="0.1" value="${get().profiles[k].goalWeight}" required></label></fieldset>`).join("")}<button class="btn" type="submit">Save household goals</button></form></details><div class="feature-ribbon"><span>ORIGINAL KITCHEN</span><strong>Your recipes and cooking cards</strong><small>Discovery and the Kitchen scratchpad below remain available. These selections are separate from your dated plan.</small></div>`;
+        )}</div>${shopping(plans)}<details class="phase-advanced"><summary>Household goals</summary><form id="profile-form" class="phase-fields">${["you", "wife"].map((k) => `<fieldset><legend>${esc(get().profiles[k].name)}</legend><label>Name<input name="${k}-name" value="${esc(get().profiles[k].name)}" required maxlength="80"></label><label>Daily calorie target<input name="${k}-calories" type="number" min="1" max="10000" value="${get().profiles[k].calories ?? ""}"></label><label>Daily protein target (g)<input name="${k}-protein" type="number" min="0" max="1000" value="${get().profiles[k].protein ?? ""}"></label><label>Goal weight (lb, 0 = no target)<input name="${k}-goalWeight" type="number" min="0" max="1000" step="0.1" value="${get().profiles[k].goalWeight ?? ""}"></label></fieldset>`).join("")}<button class="btn" type="submit">Save household goals</button></form></details><div class="feature-ribbon"><span>ORIGINAL KITCHEN</span><strong>Your recipes and cooking cards</strong><small>Discovery and the Kitchen scratchpad below remain available. These selections are separate from your dated plan.</small></div>`;
   }
   function shopping(plans) {
     const items = M.groceries(plans),
@@ -299,6 +305,7 @@
             return (
               rows.length &&
               !t.partial &&
+              get().profiles[k].protein !== null &&
               t.protein >= get().profiles[k].protein
             );
           }).length;
@@ -374,7 +381,23 @@
     lastFocus?.focus();
   }
   function componentHTML(c, i) {
-    return `<details class="component-editor" data-component="${esc(c.id)}" open><summary>Component ${i + 1}: ${esc(c.name || "New food")}</summary><div class="phase-fields"><label>Food name<input data-field="name" value="${esc(c.name)}" required maxlength="150"></label><label>Quantity<input data-field="quantity" type="number" min="0" max="1000000" step="any" value="${c.quantity ?? ""}" placeholder="Unknown"></label><label>Measurement unit<select data-field="unit" data-previous-unit="${esc(c.unit)}">${options(M.UNITS, c.unit)}</select></label>${mode === "plan" ? `<label>Wife's base quantity (optional)<input data-field="wifeQuantity" type="number" min="0" max="1000000" step="any" value="${c.wifeQuantity ?? ""}" placeholder="Same as quantity"></label>` : ""}<label>Nutrition status<select data-field="status">${options(["unknown", "estimate", "verified"], c.status)}</select></label><label class="phase-wide">Nutrition source / editable assumptions<input data-field="source" value="${esc(c.source)}" maxlength="500" placeholder="Label, official menu, reference food or unknown"></label><label>Grocery category<select data-field="group">${options(["protein", "grain", "veg", "fat", "sauce", "spice", "other"], c.group || "other")}</select></label></div><details class="phase-advanced"><summary>Nutrition per 1 ${esc(c.unit)} · blank means unknown</summary><p class="notice">Enter nutrition for one selected unit, not the entire meal. For a label per 100 g, divide each value by 100 before entering it. Use verified only for checked label or official data and name the source. Reference foods and assumed portions are estimates, never official restaurant nutrition.</p><div class="phase-fields">${M.NUTRIENTS.map((k) => `<label>${{ kcal: "Calories (kcal)", protein: "Protein (g)", carbs: "Carbohydrate (g)", fat: "Fat (g)", fiber: "Fiber (g)" }[k]} per unit<input data-nutrient="${k}" type="number" min="0" max="1000000" step="any" value="${c.nutrients[k] ?? ""}" placeholder="Unknown"></label>`).join("")}</div></details>${btn("remove-component", "Remove component", c.id)}</details>`;
+    return `<details class="component-editor" data-component="${esc(c.id)}" open><summary>Component ${i + 1}: ${esc(c.name || "New food")}</summary><div class="phase-fields"><label>Food name<input data-field="name" value="${esc(c.name)}" required maxlength="150"></label><label>Quantity<input data-field="quantity" type="number" min="0" max="1000000" step="any" value="${c.quantity ?? ""}" placeholder="Unknown"></label><label>Measurement unit<select data-field="unit" data-previous-unit="${esc(c.unit)}">${options(M.UNITS, c.unit)}</select></label>${mode === "plan" ? `<label>Wife's base quantity (optional)<input data-field="wifeQuantity" type="number" min="0" max="1000000" step="any" value="${c.wifeQuantity ?? ""}" placeholder="Same as quantity"></label>` : ""}<label>Nutrition status<select data-field="status">${[
+      ["unknown", "Unknown"],
+      ["estimate", "Reference-food estimate"],
+      [
+        "verified",
+        draft.kind === "Restaurant"
+          ? "Restaurant-published nutrition"
+          : "Published or label nutrition",
+      ],
+    ]
+      .map(
+        ([v, label]) =>
+          `<option value="${v}" ${v === c.status ? "selected" : ""}>${label}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label><label class="phase-wide">Nutrition source / editable assumptions<input data-field="source" value="${esc(c.source)}" maxlength="500" placeholder="Label, official menu, reference food or unknown"></label><label>Preparation details<input data-field="preparation" value="${esc(c.preparation || "")}" placeholder="Optional: cooked, skin, additions"></label>${mode === "journal" ? `<label>Portion actually consumed (%)<input data-field="consumedPercent" type="number" min="0" max="100" step="any" value="${(c.consumedFraction ?? 1) * 100}"></label>` : ""}<label>Grocery category<select data-field="group">${options(["protein", "grain", "veg", "fat", "sauce", "spice", "other"], c.group || "other")}</select></label></div><details class="phase-advanced"><summary>Nutrition per ${fmt(c.nutritionBasis ?? 1)} ${esc(c.unit)} · blank means unknown</summary><p class="notice">Enter numbers from the source, then its serving basis. The app calculates your portion; no manual division is needed. Published restaurant data must match the restaurant and serving basis. Estimates are not official restaurant nutrition.</p><label class="phase-label">Nutrition given per (selected units)<input data-field="nutritionBasis" required type="number" min="0.000001" max="1000000" step="any" value="${c.nutritionBasis ?? 1}"></label><div class="phase-fields">${M.NUTRIENTS.map((k) => `<label>${{ kcal: "Calories (kcal)", protein: "Protein (g)", carbs: "Carbohydrate (g)", fat: "Fat (g)", fiber: "Fiber (g)" }[k]} from source<input data-nutrient="${k}" type="number" min="0" max="1000000" step="any" value="${c.nutrients[k] ?? ""}" placeholder="Unknown"></label>`).join("")}</div></details>${btn("remove-component", "Remove component", c.id)}</details>`;
   }
   function drawEditor() {
     const m = draft;
@@ -382,13 +405,13 @@
       .favorites.map((f) => `<option value="${f.id}">${esc(f.name)}</option>`)
       .join(
         "",
-      )}</select></label><label>Meal name<input id="meal-name" name="name" required maxlength="150" value="${esc(m.name)}"></label><label>Date<input name="date" type="date" required value="${m.date}"></label><label>Time<input name="time" type="time" required value="${m.time}"></label><label>Meal category<select name="category">${options(M.CATEGORIES, m.category)}</select></label><label>Entry method<select name="kind">${options(M.SOURCES, m.kind)}</select></label>${mode === "journal" ? `<label>Household profile<select name="profile">${["you", "wife"].map((k) => `<option value="${k}" ${m.profile === k ? "selected" : ""}>${esc(get().profiles[k].name)}</option>`).join("")}</select></label>` : `<label>Your portion multiplier<input name="you" type="number" min="0" max="20" step="any" required value="${m.portions.you}"></label><label>Wife's portion multiplier<input name="wife" type="number" min="0" max="20" step="any" required value="${m.portions.wife}"></label><p class="notice phase-wide">Set a multiplier to 0 to exclude that household member. Original recipe base amounts differ between people; each can be edited below.</p>`}<label>Restaurant or food source<input name="restaurant" list="restaurant-names" value="${esc(m.restaurant)}" maxlength="150" placeholder="Search saved names or enter any restaurant"></label><datalist id="restaurant-names">${get()
+      )}</select></label><label>Meal name<input id="meal-name" name="name" required maxlength="150" value="${esc(m.name)}"></label><label>Date<input name="date" type="date" required value="${m.date}"></label><label>Time<input name="time" type="time" required value="${m.time}"></label><label>Meal category<select name="category">${options(M.CATEGORIES, m.category)}</select></label><label>Entry method<select name="kind">${options(M.SOURCES, m.kind)}</select></label>${mode === "journal" ? `<label>Household profile<select name="profile">${["you", "wife"].map((k) => `<option value="${k}" ${m.profile === k ? "selected" : ""}>${esc(get().profiles[k].name)}</option>`).join("")}</select></label>` : `<label>Your portion multiplier<input name="you" type="number" min="0" max="20" step="any" required value="${m.portions.you}"></label><label>Wife's portion multiplier<input name="wife" type="number" min="0" max="20" step="any" required value="${m.portions.wife}"></label><label class="phase-wide"><input type="checkbox" name="includeGroceries" ${m.includeGroceries ? "checked" : ""}> Add Custom/Packaged ingredients to groceries. Home-cooked meals are included; restaurant meals are always excluded.</label><p class="notice phase-wide">Set a multiplier to 0 to exclude that household member. Original recipe base amounts differ between people; each can be edited below.</p>`}<label>Restaurant or food source<input name="restaurant" list="restaurant-names" value="${esc(m.restaurant)}" maxlength="150" placeholder="Search saved names or enter any restaurant"></label><datalist id="restaurant-names">${get()
       .restaurants.map(
         (r) => `<option value="${esc(r.name)}">${esc(r.location)}</option>`,
       )
       .join(
         "",
-      )}</datalist><label>Location<input name="location" value="${esc(m.location)}" maxlength="150"></label><label class="phase-wide">Notes / portion assumptions<textarea name="notes" maxlength="2000">${esc(m.notes)}</textarea></label>${mode === "journal" ? `<label class="phase-wide">Leftovers not eaten<textarea name="leftovers" maxlength="1000" placeholder="Describe what was left; only eaten quantities belong below.">${esc(m.leftovers)}</textarea></label>` : ""}</div><h3>Build your plate</h3><p class="notice">Unknown amounts may be left blank. No restaurant quantities or nutrition are assumed for you.</p><div id="component-list">${m.components.map(componentHTML).join("")}</div>${btn("add-component", "+ Add component")}<div id="editor-totals" class="phase-summary"></div><p id="editor-error" class="phase-error" role="alert"></p><div class="actionbar"><button class="btn" id="save-meal" type="submit">${mode === "plan" ? "Save planned meal" : "Save journal entry"}</button>${btn("close-editor", "Cancel")}</div></form>`;
+      )}</datalist><label>Location<input name="location" value="${esc(m.location)}" maxlength="150"></label><label class="phase-wide">Notes / portion assumptions<textarea name="notes" maxlength="2000">${esc(m.notes)}</textarea></label>${mode === "journal" ? `<label class="phase-wide">Leftovers not eaten<textarea name="leftovers" maxlength="1000" placeholder="Describe what was left; only eaten quantities belong below.">${esc(m.leftovers)}</textarea></label>` : ""}</div>${m.kind === "Restaurant" ? `<div class="actionbar">${btn("choose-restaurant", "Find or reuse restaurant")}</div><p class="notice">No official menu is assumed. Enter what you actually selected; unknown portions and nutrients may stay blank.</p>` : ""}<h3>Build your plate</h3><p class="notice">Unknown amounts may be left blank. No restaurant quantities or nutrition are assumed for you.</p><div id="component-list">${m.components.map(componentHTML).join("")}</div>${btn("add-component", "+ Add component")}<div id="editor-totals" class="phase-summary"></div><p id="editor-error" class="phase-error" role="alert"></p><div class="actionbar"><button class="btn" id="save-meal" type="submit">${mode === "plan" ? "Save planned meal" : "Save journal entry"}</button>${btn("close-editor", "Cancel")}</div></form>`;
     preview();
   }
   function readEditor() {
@@ -408,6 +431,12 @@
     ])
       if (form.elements.namedItem(k))
         draft[k] = form.elements.namedItem(k).value.trim();
+    if (
+      mode === "plan" &&
+      (draft.includeGroceries !== undefined ||
+        form.elements.includeGroceries.checked)
+    )
+      draft.includeGroceries = form.elements.includeGroceries.checked;
     if (mode === "plan")
       draft.portions = {
         you: Number(form.elements.you.value),
@@ -417,11 +446,25 @@
       const c = draft.components.find((x) => x.id === el.dataset.component);
       for (const input of el.querySelectorAll("[data-field]")) {
         const k = input.dataset.field;
-        if (["quantity", "wifeQuantity"].includes(k)) {
+        if (k === "consumedPercent") {
+          if (c.consumedFraction !== undefined || Number(input.value) !== 100)
+            c.consumedFraction = Number(input.value) / 100;
+        } else if (k === "nutritionBasis") {
+          if (c.nutritionBasis !== undefined || Number(input.value) !== 1)
+            c.nutritionBasis = Number(input.value);
+        } else if (["quantity", "wifeQuantity"].includes(k)) {
           if (k === "wifeQuantity" && input.value === "") delete c[k];
           else c[k] = input.value === "" ? null : Number(input.value);
-        } else c[k] = input.value.trim();
+        } else if (
+          k !== "preparation" ||
+          c.preparation !== undefined ||
+          input.value.trim() !== ""
+        )
+          c[k] = input.value.trim();
       }
+      const heading = el.querySelector(".phase-advanced>summary");
+      if (heading)
+        heading.textContent = `Nutrition per ${fmt(c.nutritionBasis ?? 1)} ${c.unit} · blank nutrients mean unknown`;
       for (const input of el.querySelectorAll("[data-nutrient]"))
         c.nutrients[input.dataset.nutrient] =
           input.value === "" ? null : Number(input.value);
@@ -466,7 +509,12 @@
         }
       }
     }
-    if (mode === "journal" && draft.components.every((c) => c.quantity === 0)) {
+    if (
+      mode === "journal" &&
+      draft.components.every(
+        (c) => c.quantity === 0 || c.consumedFraction === 0,
+      )
+    ) {
       error.textContent =
         "At least one eaten quantity must be greater than zero or explicitly unknown.";
       return;
@@ -486,6 +534,13 @@
       }
     }
     const copy = M.clone(draft);
+    const originalEntry = get().journal.find((x) => x.id === copy.id);
+    if (
+      mode === "journal" &&
+      originalEntry &&
+      originalEntry.profile !== copy.profile
+    )
+      copy.id = M.id();
     delete copy.legacy;
     const ok = commit(
       () => {
@@ -504,8 +559,16 @@
           )
         )
           get().restaurants.push({
+            id: M.id(),
             name: copy.restaurant,
             location: copy.location,
+            provider: "local",
+            placeId: null,
+            address: "",
+            website: "",
+            menuUrl: "",
+            source: "User-entered; not independently verified",
+            lastChecked: null,
           });
       },
       mode === "plan"
@@ -519,6 +582,54 @@
     } else
       error.textContent =
         "Unable to save. Check all fields and browser storage.";
+  }
+  function browseRestaurants(target) {
+    const prior = draft ? M.clone(draft) : null;
+    const day = draft?.date || (target === "plan" ? week : journalDate);
+    window.HHRestaurants.open({
+      mode: target,
+      date: day,
+      actual,
+      commit,
+      onPlate(r) {
+        const m = prior || M.blankMeal(day);
+        Object.assign(m, {
+          kind: "Restaurant",
+          name: r.name + " plate",
+          restaurant: r.name,
+          restaurantId: r.id,
+          location: r.location,
+        });
+        if (target === "journal") {
+          m.profile = activeProfile;
+          delete m.portions;
+        }
+        editor(m, target);
+      },
+      onReuse(saved, r) {
+        const m = M.clone(saved);
+        Object.assign(m, {
+          id: M.id(),
+          date: day,
+          plannedId: null,
+          restaurant: r.name,
+          restaurantId: r.id,
+          location: r.location,
+        });
+        m.components.forEach((c) => (c.id = M.id()));
+        if (target === "plan") {
+          delete m.profile;
+          m.portions ??= { you: 1, wife: 1 };
+        } else {
+          m.profile = activeProfile;
+          delete m.portions;
+        }
+        editor(m, target);
+      },
+      onEdit(m) {
+        editor(m, "journal", m.legacy);
+      },
+    });
   }
   function newJournal(kind = "Custom") {
     const m = M.blankMeal(journalDate);
@@ -547,15 +658,6 @@
         get().favorites.push(copy);
     }, "Meal saved to favorites.");
   }
-  let storageChanged = false;
-  window.addEventListener("storage", (event) => {
-    if (event.key === "healthhub-v5" || event.key === null) {
-      storageChanged = true;
-      notice(
-        "Data changed in another tab. Export unsaved work if needed, then refresh before saving.",
-      );
-    }
-  });
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-p]");
     if (!button) return;
@@ -566,7 +668,7 @@
       return;
     }
     if (
-      storageChanged &&
+      H.store.reason() &&
       ![
         "previous-week",
         "next-week",
@@ -602,8 +704,13 @@
       H.nav("nutrition");
     } else if (action === "quick-log") {
       newJournal();
+    } else if (action === "browse-plan-restaurants") {
+      browseRestaurants("plan");
     } else if (action === "restaurant") {
-      newJournal("Restaurant");
+      browseRestaurants("journal");
+    } else if (action === "choose-restaurant") {
+      readEditor();
+      browseRestaurants(mode);
     } else if (action === "add-plan") {
       editor(M.blankMeal(button.dataset.date || localDay()));
     } else if (["edit-plan", "move-plan"].includes(action) && plan) {
@@ -782,13 +889,13 @@
         const factor = a[1] / b[1];
         if (c.quantity !== null) c.quantity *= factor;
         if (c.wifeQuantity !== undefined) c.wifeQuantity *= factor;
-        for (const k of M.NUTRIENTS)
-          if (c.nutrients[k] !== null) c.nutrients[k] /= factor;
+        c.nutritionBasis = (c.nutritionBasis ?? 1) * factor;
       } else if (previous !== next) {
         c.quantity = null;
         delete c.wifeQuantity;
         c.nutrients = Object.fromEntries(M.NUTRIENTS.map((k) => [k, null]));
         c.status = "unknown";
+        c.nutritionBasis = 1;
         notice(
           "Units cannot be reliably converted. Enter the new amount and nutrition assumptions.",
         );
@@ -868,7 +975,7 @@
   });
   document.addEventListener("submit", (event) => {
     if (event.target.id === "meal-form") {
-      if (storageChanged) {
+      if (H.store.reason()) {
         event.preventDefault();
         notice("Refresh before saving changes from this tab.");
         return;
@@ -935,14 +1042,26 @@
         for (const k of ["you", "wife"])
           get().profiles[k] = {
             name: f.get(k + "-name").trim(),
-            calories: Number(f.get(k + "-calories")),
-            protein: Number(f.get(k + "-protein")),
-            goalWeight: Number(f.get(k + "-goalWeight")),
+            calories:
+              f.get(k + "-calories") === ""
+                ? null
+                : Number(f.get(k + "-calories")),
+            protein:
+              f.get(k + "-protein") === ""
+                ? null
+                : Number(f.get(k + "-protein")),
+            goalWeight:
+              f.get(k + "-goalWeight") === ""
+                ? null
+                : Number(f.get(k + "-goalWeight")),
           };
+        H.state.profileName = get().profiles.you.name;
         H.state.calorieTarget = get().profiles.you.calories;
         H.state.proteinTarget = get().profiles.you.protein;
         H.state.goalWeight = get().profiles.you.goalWeight;
         Object.assign(H.state.wifeProfile, {
+          name: get().profiles.wife.name,
+          goalWeight: get().profiles.wife.goalWeight,
           calorieTarget: get().profiles.wife.calories,
           proteinTarget: get().profiles.wife.protein,
         });
@@ -951,6 +1070,18 @@
   });
   dialog.addEventListener("cancel", () => {
     draft = null;
+  });
+  window.HHPhase = {
+    editor,
+    newJournal,
+    commit,
+    actual,
+    getContext: () => ({ profile: activeProfile, date: journalDate, week }),
+    favorite,
+  };
+  window.addEventListener("storage", (event) => {
+    if (event.key === window.HealthHubData.KEY || event.key === null)
+      notice("Data changed in another tab. Recheck saved data before editing.");
   });
   window.phaseRender = render;
   render();

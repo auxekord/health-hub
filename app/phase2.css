@@ -268,3 +268,42 @@ button {
     font-size: 22px;
   }
 }
+#restaurant-browser .entry {
+  overflow-wrap: anywhere;
+}
+#restaurant-browser .phase-label {
+  margin: 8px 0;
+}
+#restaurant-browser .actionbar {
+  margin: 14px 0;
+}
+#restaurant-details {
+  border-top: 1px solid #526b48;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+#restaurant-browser input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #c8fa50;
+}
+.phase-dialog .phase-error {
+  position: sticky;
+  bottom: 0;
+  background: #1b211b;
+}
+.phase-dialog input[type="number"] {
+  width: 100%;
+}
+.phase-dialog h2,
+.phase-journal h2 {
+  overflow-wrap: anywhere;
+}
+#restaurant-browser > .row,
+#meal-form > .row {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #1b211b;
+  padding: 8px 0;
+}

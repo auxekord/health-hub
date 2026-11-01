@@ -62,7 +62,12 @@ function fixture() {
     futureExtension: { notes: ["Fictional extension data"] },
   };
 }
-const nav = (page, id) => page.locator(`.nav [data-go="${id}"]`).click();
+const nav = async (page, id) => {
+  if (id === "nutrition") {
+    await page.locator('.nav [data-go="plan"]').click();
+    await page.locator('#plan [data-go="nutrition"]').first().click();
+  } else await page.locator(`.nav [data-go="${id}"]`).click();
+};
 async function seed(page, value) {
   await page.goto("./");
   await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
@@ -82,6 +87,7 @@ async function importJSON(page, value, { accept = true } = {}) {
       typeof value === "string" ? value : JSON.stringify(value),
     ),
   });
+  await expect(page.locator("#import")).toHaveValue("");
 }
 async function downloadText(page, button) {
   const promise = page.waitForEvent("download");

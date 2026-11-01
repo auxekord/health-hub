@@ -72,6 +72,8 @@
       !unique(v.logs)
     )
       return false;
+    if (v.phase2 !== undefined && !window.HHModel?.valid(v.phase2))
+      return false;
     if (v.schemaVersion !== undefined && v.schemaVersion !== 1) return false;
     for (const k of ["steps", "weight"])
       if (
@@ -190,7 +192,12 @@
       return normalize({ ...clone(existing), ...clone(incoming) });
     const next = normalize(existing);
     for (const [k, v] of Object.entries(incoming)) {
-      if (k === "selected") {
+      if (k === "phase2") {
+        next.phase2 =
+          next.phase2 && !newStore
+            ? window.HHModel.merge(next.phase2, v)
+            : clone(v);
+      } else if (k === "selected") {
         next.selected = [...new Set([...next.selected, ...v])];
       } else if (["logs", "foodEntries", "kitchenFoods"].includes(k)) {
         const ids = new Set(next[k].map((x) => String(x.id)));

@@ -50,6 +50,19 @@ async function phase(page) {
     () => JSON.parse(localStorage.getItem("healthhub-v5")).phase2,
   );
 }
+async function openRestaurantPlate(page) {
+  await p(page, "restaurant").click();
+  await page
+    .getByRole("button", { name: "Save a new restaurant", exact: true })
+    .click();
+  await page.locator("#restaurant-form [name=name]").fill("Campestre Chicken");
+  await page
+    .locator("#restaurant-form [name=location]")
+    .fill("Lincoln Park, Michigan");
+  await page
+    .getByRole("button", { name: "Build a restaurant plate", exact: true })
+    .click();
+}
 test.beforeEach(async ({ page }) => {
   await page.goto("./");
 });
@@ -126,7 +139,7 @@ test("manual Campestre plate, independent edits, removal, estimates, favorite, r
   page,
 }) => {
   await nav(page, "journal");
-  await p(page, "restaurant").click();
+  await openRestaurantPlate(page);
   await form(page).locator('[name="name"]').fill("Campestre lunch");
   await form(page).locator('[name="restaurant"]').fill("Campestre Chicken");
   await form(page).locator('[name="location"]').fill("Lincoln Park, Michigan");
@@ -344,7 +357,7 @@ test("tablet navigation, touch targets, no horizontal page overflow and offline-
     ).toBeTruthy();
   }
   await nav(page, "journal");
-  await p(page, "restaurant").click();
+  await openRestaurantPlate(page);
   expect(
     await page.evaluate(
       () =>

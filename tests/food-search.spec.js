@@ -1,7 +1,8 @@
 const { test, expect } = require("@playwright/test");
 const go = async (p) => {
   await p.goto("./");
-  await p.locator('.nav [data-go="nutrition"]').click();
+  await p.locator('.nav [data-go="plan"]').click();
+  await p.locator('#plan [data-go="nutrition"]').first().click();
   await p.locator("#liveQuery").fill("oats");
 };
 const endpoint = "https://world.openfoodfacts.org/cgi/search.pl**";

@@ -1,6 +1,7 @@
 const { defineConfig } = require("@playwright/test");
 module.exports = defineConfig({
   testDir: "./tests",
+  testIgnore: "**/preview/**",
   workers: 2,
   use: {
     baseURL: "http://127.0.0.1:8000/health-hub/",

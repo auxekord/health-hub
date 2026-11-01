@@ -1,0 +1,22 @@
+.demo-banner {
+  border: 2px solid #c8fa50;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 22px;
+  background: #23321c;
+  color: #f5f6ef;
+}
+.demo-banner strong {
+  color: #c8fa50;
+  font-size: 16px;
+}
+.demo-banner p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.demo-banner button {
+  min-height: 44px;
+}
+.demo-banner [aria-disabled] {
+  opacity: 0.6;
+}

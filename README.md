@@ -71,3 +71,7 @@ before changing current data. Old v16 data and backups remain supported.
 See [AUDIT.md](AUDIT.md) for the v16 audit and [PHASE2.md](PHASE2.md) for architecture,
 validation, remaining limitations, and the Phase 2 change record. No deployment
 or merge is authorized by development/test commands.
+
+## Integrated Phase 2 review
+
+See [integration report](PHASE2_INTEGRATION_REPORT.md), [restaurant implementation](RESTAURANT_IMPLEMENTATION.md), [test results](TEST_RESULTS.md), and [sanitized preview instructions](PREVIEW_BUILD.md). The existing Phase 2 draft PR includes production security and pending food-search repair changes; no deployment is authorized.
