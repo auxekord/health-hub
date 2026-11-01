@@ -215,6 +215,19 @@
       calorieTarget: optional("secondCalories"),
       proteinTarget: optional("secondProtein"),
     };
+    if (next.phase2) {
+      Object.assign(next.phase2.profiles.you, {
+        name: next.profileName || "Profile 1",
+        calories: next.calorieTarget,
+        protein: next.proteinTarget,
+        goalWeight: next.goalWeight,
+      });
+      Object.assign(next.phase2.profiles.wife, {
+        name: next.wifeProfile.name || "Profile 2",
+        calories: next.wifeProfile.calorieTarget,
+        protein: next.wifeProfile.proteinTarget,
+      });
+    }
     if (H.store.write(next)) {
       H.setState(H.store.state());
       H.render();
